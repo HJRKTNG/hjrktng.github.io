@@ -1,0 +1,21 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Redirecting…</title>
+<noscript>
+  <p>Redirecting… If it doesn't move, open <a id="fallback" href="#">this link</a>.</p>
+</noscript>
+<script>
+  (async () => {
+    try {
+      const res = await fetch('current.json', {cache: 'no-store'});
+      const { url } = await res.json();
+      if (typeof url === 'string' && url.startsWith('http')) {
+        location.replace(url);
+      } else {
+        document.body.innerHTML = 'Invalid redirect URL.';
+      }
+    } catch (e) {
+      document.body.innerHTML = 'Failed to load redirect URL.';
+    }
+  })();
+</script>
