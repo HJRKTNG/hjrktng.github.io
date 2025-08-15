@@ -1,21 +1,35 @@
 <!doctype html>
 <meta charset="utf-8">
 <title>Redirecting…</title>
-<noscript>
-  <p>Redirecting… If it doesn't move, open <a id="fallback" href="#">this link</a>.</p>
-</noscript>
+<style>
+  body { font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif; padding: 24px; }
+  .box { max-width: 720px; margin: auto; }
+  .muted { color: #666; }
+</style>
+<div class="box">
+  <h1>Redirecting…</h1>
+  <p class="muted">最新の公開URLへ転送中です。動かない場合は下のリンクをお使いください。</p>
+  <p><a id="fallback" href="#">Open the app</a></p>
+</div>
 <script>
-  (async () => {
-    try {
-      const res = await fetch('current.json', {cache: 'no-store'});
-      const { url } = await res.json();
-      if (typeof url === 'string' && url.startsWith('http')) {
-        location.replace(url);
-      } else {
-        document.body.innerHTML = 'Invalid redirect URL.';
-      }
-    } catch (e) {
-      document.body.innerHTML = 'Failed to load redirect URL.';
+(async () => {
+  const ts = Date.now();
+  const jsonUrl = 'current.json?ts=' + ts;
+  try {
+    const res = await fetch(jsonUrl, { cache: 'no-store' });
+    const data = await res.json();
+    const url = (data && typeof data.url === 'string') ? data.url : '';
+    const a = document.getElementById('fallback');
+    a.href = jsonUrl; // 最低限、JSON自体は開けるように
+    if (url.startsWith('http')) {
+      a.href = url;   // 手動リンクも正しい先に差し替え
+      location.replace(url);
+    } else {
+      document.querySelector('.muted').textContent = 'Redirect URL is not ready. Open the link below.';
     }
-  })();
+  } catch (e) {
+    document.querySelector('.muted').textContent = 'Failed to fetch redirect URL. Open the link below.';
+    document.getElementById('fallback').href = jsonUrl;
+  }
+})();
 </script>
