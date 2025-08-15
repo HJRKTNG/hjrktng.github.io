@@ -20,9 +20,9 @@
     const data = await res.json();
     const url = (data && typeof data.url === 'string') ? data.url : '';
     const a = document.getElementById('fallback');
-    a.href = jsonUrl; // 最低限、JSON自体は開けるように
+    a.href = jsonUrl; // JSON自体は常に開けるように
     if (url.startsWith('http')) {
-      a.href = url;   // 手動リンクも正しい先に差し替え
+      a.href = url;   // 手動リンクも正しい先に
       location.replace(url);
     } else {
       document.querySelector('.muted').textContent = 'Redirect URL is not ready. Open the link below.';
