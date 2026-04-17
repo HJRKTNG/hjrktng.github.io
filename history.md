@@ -22,3 +22,15 @@
 - **Contact.tsx**: エディトリアル風デザイン
 - **Resume.tsx**: 新デザイン適用
 - **Footer.tsx**: 洗練されたフッター
+
+## 2026-04-18 — Hero に 3Dボクセル木追加
+
+### 変更内容
+- **依存追加**: `three`, `@react-three/fiber`, `@types/three`
+- **新規ファイル**: `src/components/3d/VoxelTree.tsx`
+  - ボクセル（立方体）で構成された木を Three.js で描画
+  - 自動回転（Y軸、約0.32rad/秒）
+  - マウス位置追尾 → 近接ブロックが避けるアニメーション（push radius 2.2、spring lerp 0.12）
+  - アンバー基調（幹: 濃茶、葉: `#c89240`〜`#f0d495` の5段階）
+  - `prefers-reduced-motion` 対応で「木」文字にフォールバック
+- **Hero.tsx 更新**: デスクトップでは右半分に3Dキャンバス、左半分にテキスト（左からのグラデーションで可読性確保）。モバイルは背景として薄く配置
