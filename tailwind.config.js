@@ -5,55 +5,48 @@ export default {
     extend: {
       colors: {
         bg: {
-          base:     '#0a0e17',
-          surface:  '#0f1623',
-          elevated: '#161f30',
-          card:     '#1a2235',
+          base:     '#080807',
+          surface:  '#0d0c0a',
+          elevated: '#141310',
+          card:     '#1a1815',
         },
         accent: {
-          DEFAULT: '#38bdf8',
-          hover:   '#7dd3fc',
-          dim:     'rgba(56,189,248,0.12)',
+          DEFAULT: '#d4a853',
+          hover:   '#e8c07a',
+          dim:     'rgba(212,168,83,0.12)',
+          muted:   'rgba(212,168,83,0.5)',
+        },
+        ink: {
+          50:  '#f5f0e6',
+          100: '#e8e0d0',
+          200: '#c4bbaa',
+          300: '#9d9385',
+          400: '#706860',
+          500: '#3e3830',
         },
       },
       fontFamily: {
-        sans: ['Inter', 'Noto Sans JP', 'Hiragino Sans', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Consolas', 'monospace'],
+        display: ['Cormorant Garamond', 'Noto Serif JP', 'Georgia', 'serif'],
+        sans: ['Outfit', 'Noto Sans JP', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'Consolas', 'monospace'],
       },
       animation: {
-        'fade-up':      'fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) forwards',
-        'fade-in':      'fadeIn 0.8s ease-out forwards',
-        'fade-left':    'fadeLeft 0.7s cubic-bezier(0.16,1,0.3,1) forwards',
-        'fade-right':   'fadeRight 0.7s cubic-bezier(0.16,1,0.3,1) forwards',
-        'scale-in':     'scaleIn 0.5s cubic-bezier(0.16,1,0.3,1) forwards',
-        'blink':        'blink 1s step-end infinite',
-        'float':        'float 6s ease-in-out infinite',
-        'pulse-slow':   'pulse 4s cubic-bezier(0.4,0,0.6,1) infinite',
-        'spin-slow':    'spin 20s linear infinite',
-        'gradient':     'gradient 8s ease infinite',
-        'slide-in-nav': 'slideInNav 0.3s cubic-bezier(0.16,1,0.3,1) forwards',
-        'shimmer':      'shimmer 2s linear infinite',
+        'fade-up':    'fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) forwards',
+        'fade-in':    'fadeIn 1s ease-out forwards',
+        'blink':      'blink 1.2s step-end infinite',
+        'float':      'float 7s ease-in-out infinite',
+        'pulse-slow': 'pulse 4s cubic-bezier(0.4,0,0.6,1) infinite',
+        'spin-slow':  'spin 30s linear infinite',
+        'shimmer':    'shimmer 2.5s linear infinite',
       },
       keyframes: {
         fadeUp: {
-          from: { opacity: '0', transform: 'translateY(32px)' },
+          from: { opacity: '0', transform: 'translateY(24px)' },
           to:   { opacity: '1', transform: 'translateY(0)' },
         },
         fadeIn: {
           from: { opacity: '0' },
           to:   { opacity: '1' },
-        },
-        fadeLeft: {
-          from: { opacity: '0', transform: 'translateX(-32px)' },
-          to:   { opacity: '1', transform: 'translateX(0)' },
-        },
-        fadeRight: {
-          from: { opacity: '0', transform: 'translateX(32px)' },
-          to:   { opacity: '1', transform: 'translateX(0)' },
-        },
-        scaleIn: {
-          from: { opacity: '0', transform: 'scale(0.9)' },
-          to:   { opacity: '1', transform: 'scale(1)' },
         },
         blink: {
           '0%, 100%': { opacity: '1' },
@@ -61,15 +54,7 @@ export default {
         },
         float: {
           '0%, 100%': { transform: 'translateY(0px)' },
-          '50%':      { transform: 'translateY(-12px)' },
-        },
-        gradient: {
-          '0%, 100%': { backgroundPosition: '0% 50%' },
-          '50%':      { backgroundPosition: '100% 50%' },
-        },
-        slideInNav: {
-          from: { opacity: '0', transform: 'translateY(-8px)' },
-          to:   { opacity: '1', transform: 'translateY(0)' },
+          '50%':      { transform: 'translateY(-14px)' },
         },
         shimmer: {
           '0%':   { backgroundPosition: '-200% 0' },
