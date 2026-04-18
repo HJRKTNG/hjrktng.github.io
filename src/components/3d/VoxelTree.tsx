@@ -26,6 +26,12 @@ const COLORS = {
   leafHigh: '#88dc84',
   leafSun: '#4c8a3a',
   leafGold: '#5e8c32',
+  // 小物（岩、キノコなど）の色
+  rockDark: '#3a3028',
+  rockLight: '#554a40',
+  shroomStem: '#e6d3ba',
+  shroomCap: '#d66842', // 温かみのある赤オレンジ
+  shroomSpots: '#f4e3c5',
 }
 
 interface Block {
@@ -234,6 +240,90 @@ function generateOakTree(): Block[] {
           scale: 0.38 + rand() * 0.1,
         })
       }
+    }
+  }
+
+  /* ─── 根元周りの小物（岩、キノコ、草） ─── */
+  // 岩をいくつか配置
+  const numRocks = 8;
+  for(let i=0; i<numRocks; i++) {
+    const angle = rand() * Math.PI * 2;
+    const dist = 1.6 + rand() * 2.2;
+    const rx = Math.cos(angle) * dist;
+    const rz = Math.sin(angle) * dist;
+    const ry = -5 + rand() * 0.3; // 地面付近
+    const rockSize = 1 + Math.floor(rand() * 2); // 1~2ブロックの塊
+    for(let bx=0; bx<rockSize; bx++) {
+      for(let by=0; by<rockSize; by++) {
+        for(let bz=0; bz<rockSize; bz++) {
+          if(rand() > 0.3) {
+            blocks.push({
+              pos: [(rx+bx*0.4)*S, (ry+by*0.4)*S, (rz+bz*0.4)*S],
+              color: rand() > 0.5 ? COLORS.rockLight : COLORS.rockDark,
+              type: 'trunk',
+              scale: VS * (0.8 + rand() * 0.4),
+            });
+          }
+        }
+      }
+    }
+  }
+
+  // キノコをいくつか配置
+  const numShrooms = 5;
+  for(let i=0; i<numShrooms; i++) {
+    const angle = rand() * Math.PI * 2;
+    const dist = 1.8 + rand() * 1.5;
+    const mx = Math.cos(angle) * dist;
+    const mz = Math.sin(angle) * dist;
+    const my = -5;
+    
+    // 柄
+    const stemH = 1 + Math.floor(rand() * 1.5);
+    for(let h=0; h<stemH; h++) {
+      blocks.push({ pos: [mx*S, (my+h)*S, mz*S], color: COLORS.shroomStem, type: 'trunk', scale: VS * 0.75 });
+    }
+    
+    // 傘 (3x3 クロス)
+    const capY = my + stemH;
+    for(let cx=-1; cx<=1; cx++) {
+      for(let cz=-1; cz<=1; cz++) {
+        if(Math.abs(cx)===1 && Math.abs(cz)===1) continue; // 角を削る
+        const isSpot = rand() > 0.75;
+        blocks.push({
+          pos: [(mx+cx*0.6)*S, capY*S, (mz+cz*0.6)*S],
+          color: isSpot ? COLORS.shroomSpots : COLORS.shroomCap,
+          type: 'trunk',
+          scale: VS * 1.05,
+        });
+      }
+    }
+    // 傘の頂点
+    blocks.push({
+      pos: [mx*S, (capY+0.6)*S, mz*S],
+      color: COLORS.shroomCap,
+      type: 'trunk',
+      scale: VS * 0.85,
+    });
+  }
+
+  // 小さな草やシダを配置
+  const numGrass = 18;
+  for(let i=0; i<numGrass; i++) {
+    const angle = rand() * Math.PI * 2;
+    const dist = 1.5 + rand() * 2.5;
+    const gx = Math.cos(angle) * dist;
+    const gz = Math.sin(angle) * dist;
+    const gy = -5; // 地面
+
+    const height = 1 + Math.floor(rand() * 2);
+    for(let h=0; h<=height; h++) {
+      blocks.push({
+        pos: [gx*S, (gy+h*0.8)*S, gz*S],
+        color: leafPalette[Math.floor(rand() * 3) + 2], // 濃い目の緑
+        type: 'leaf', // 葉と同じ質感
+        scale: VS * (0.6 - h*0.1),
+      });
     }
   }
 
