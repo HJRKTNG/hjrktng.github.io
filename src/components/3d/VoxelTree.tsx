@@ -261,7 +261,7 @@ function generateOakTree(): Block[] {
               pos: [(rx+bx*0.4)*S, (ry+by*0.4)*S, (rz+bz*0.4)*S],
               color: rand() > 0.5 ? COLORS.rockLight : COLORS.rockDark,
               type: 'trunk',
-              scale: VS * (0.8 + rand() * 0.4),
+              scale: VS * (1.1 + rand() * 0.6), // 少し大きく
             });
           }
         }
@@ -270,7 +270,7 @@ function generateOakTree(): Block[] {
   }
 
   // キノコをいくつか配置
-  const numShrooms = 5;
+  const numShrooms = 2; // 量を減らす
   for(let i=0; i<numShrooms; i++) {
     const angle = rand() * Math.PI * 2;
     const dist = 1.8 + rand() * 1.5;
@@ -281,29 +281,29 @@ function generateOakTree(): Block[] {
     // 柄
     const stemH = 1 + Math.floor(rand() * 1.5);
     for(let h=0; h<stemH; h++) {
-      blocks.push({ pos: [mx*S, (my+h)*S, mz*S], color: COLORS.shroomStem, type: 'trunk', scale: VS * 0.75 });
+      blocks.push({ pos: [mx*S, (my+h*0.7)*S, mz*S], color: COLORS.shroomStem, type: 'trunk', scale: VS * 0.5 }); // 小さく
     }
     
     // 傘 (3x3 クロス)
-    const capY = my + stemH;
+    const capY = my + stemH * 0.7;
     for(let cx=-1; cx<=1; cx++) {
       for(let cz=-1; cz<=1; cz++) {
         if(Math.abs(cx)===1 && Math.abs(cz)===1) continue; // 角を削る
         const isSpot = rand() > 0.75;
         blocks.push({
-          pos: [(mx+cx*0.6)*S, capY*S, (mz+cz*0.6)*S],
+          pos: [(mx+cx*0.4)*S, capY*S, (mz+cz*0.4)*S], // 間隔も狭く
           color: isSpot ? COLORS.shroomSpots : COLORS.shroomCap,
           type: 'trunk',
-          scale: VS * 1.05,
+          scale: VS * 0.7, // 小さく
         });
       }
     }
     // 傘の頂点
     blocks.push({
-      pos: [mx*S, (capY+0.6)*S, mz*S],
+      pos: [mx*S, (capY+0.4)*S, mz*S],
       color: COLORS.shroomCap,
       type: 'trunk',
-      scale: VS * 0.85,
+      scale: VS * 0.55, // 小さく
     });
   }
 
@@ -546,6 +546,172 @@ function VoxelBird({
   )
 }
 
+/* ═══════════════════════════════════════════
+   ボクセルのリス — 根元周辺をウロチョロする
+   ═══════════════════════════════════════════ */
+function VoxelSquirrel({
+  orbitRadius,
+  orbitSpeed,
+  baseHeight,
+  phase,
+}: {
+  orbitRadius: number
+  orbitSpeed: number
+  baseHeight: number
+  phase: number
+}) {
+  const ref = useRef<Group>(null)
+  const tail = useRef<Group>(null)
+  const s = 0.16 // ボクセルサイズ
+
+  useFrame(({ clock }) => {
+    const rawT = clock.elapsedTime * orbitSpeed + phase
+    // 立ち止まりを作るためにサイン波を足す
+    const t = rawT + Math.sin(rawT * 4) * 0.2
+
+    if (ref.current) {
+      ref.current.position.set(
+        Math.cos(t) * orbitRadius,
+        baseHeight + Math.abs(Math.sin(rawT * 12)) * 0.1, // 細かく跳ねる
+        Math.sin(t) * orbitRadius,
+      )
+      ref.current.rotation.y = -t + Math.PI / 2
+    }
+    if (tail.current) {
+      // しっぽの揺れ
+      tail.current.rotation.x = Math.sin(rawT * 8) * 0.15 + 0.2
+    }
+  })
+
+  const colorBody = '#b55a2a'
+  const colorDark = '#8b3d16'
+
+  return (
+    <group ref={ref}>
+      {/* 胴体 */}
+      <mesh position={[0, s * 0.6, 0]}>
+        <boxGeometry args={[s * 0.8, s * 0.6, s * 1.2]} />
+        <meshStandardMaterial color={colorBody} roughness={0.9} />
+      </mesh>
+      {/* 頭 */}
+      <mesh position={[0, s * 1.0, s * 0.6]}>
+        <boxGeometry args={[s * 0.7, s * 0.6, s * 0.6]} />
+        <meshStandardMaterial color={colorBody} roughness={0.9} />
+      </mesh>
+      {/* 耳 */}
+      <mesh position={[-s * 0.25, s * 1.4, s * 0.5]}>
+        <boxGeometry args={[s * 0.2, s * 0.25, s * 0.2]} />
+        <meshStandardMaterial color={colorDark} roughness={0.9} />
+      </mesh>
+      <mesh position={[s * 0.25, s * 1.4, s * 0.5]}>
+        <boxGeometry args={[s * 0.2, s * 0.25, s * 0.2]} />
+        <meshStandardMaterial color={colorDark} roughness={0.9} />
+      </mesh>
+      {/* しっぽ */}
+      <group ref={tail} position={[0, s * 0.8, -s * 0.5]}>
+        <mesh position={[0, s * 0.6, -s * 0.2]}>
+          <boxGeometry args={[s * 0.6, s * 1.2, s * 0.6]} />
+          <meshStandardMaterial color={colorBody} roughness={0.9} />
+        </mesh>
+        <mesh position={[0, s * 1.3, -s * 0.4]}>
+          <boxGeometry args={[s * 0.5, s * 0.4, s * 0.5]} />
+          <meshStandardMaterial color={colorDark} roughness={0.9} />
+        </mesh>
+      </group>
+    </group>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   ボクセルクラウド (空のアニメーション用)
+   ═══════════════════════════════════════════ */
+function VoxelCloud({
+  startPos,
+  speed,
+  scale = 1,
+  opacity = 0.5,
+}: {
+  startPos: [number, number, number]
+  speed: number
+  scale?: number
+  opacity?: number
+}) {
+  const ref = useRef<Group>(null)
+
+  const blocks = useMemo(() => {
+    const res = []
+    const rng = makeRng(startPos[0] * 100 + Math.abs(startPos[1]))
+    for (let i = 0; i < 9; i++) {
+      res.push({
+        pos: [(rng() - 0.5) * 5, (rng() - 0.5) * 1.5, (rng() - 0.5) * 3] as [number, number, number],
+        size: 1.5 + rng() * 1.5,
+      })
+    }
+    return res
+  }, [startPos])
+
+  useFrame(({ clock }) => {
+    if (ref.current) {
+      const t = clock.elapsedTime
+      let x = startPos[0] + t * speed
+      if (speed > 0 && x > 35) x = -35 + (x - 35)
+      if (speed < 0 && x < -35) x = 35 + (x + 35)
+      ref.current.position.set(x, startPos[1], startPos[2])
+    }
+  })
+
+  return (
+    <group ref={ref} scale={scale}>
+      {blocks.map((b, i) => (
+        <mesh key={i} position={b.pos}>
+          <boxGeometry args={[b.size, b.size, b.size]} />
+          <meshStandardMaterial color="#8c6a40" transparent opacity={opacity} roughness={1} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   環境パーティクル (光の塵)
+   ═══════════════════════════════════════════ */
+function AtmosphereParticles() {
+  const meshRef = useRef<InstancedMeshType>(null)
+  const dummy = useMemo(() => new Object3D(), [])
+  const count = 45
+
+  const particles = useMemo(() => {
+    const rng = makeRng(888)
+    return Array.from({ length: count }).map(() => ({
+      pos: [(rng() - 0.5) * 40, (rng() - 0.5) * 20 + 4, (rng() - 0.5) * 15 - 5] as [number, number, number],
+      speed: 0.15 + rng() * 0.2,
+      phase: rng() * Math.PI * 2,
+    }))
+  }, [count])
+
+  useFrame(({ clock }) => {
+    if (!meshRef.current) return
+    const t = clock.elapsedTime
+
+    particles.forEach((p, i) => {
+      const y = p.pos[1] + Math.sin(t * p.speed + p.phase) * 1.5
+      const x = p.pos[0] + Math.cos(t * p.speed * 0.8 + p.phase) * 1.0
+      dummy.position.set(x, y, p.pos[2])
+      dummy.scale.setScalar(0.12)
+      dummy.updateMatrix()
+      meshRef.current!.setMatrixAt(i, dummy.matrix)
+    })
+    meshRef.current.instanceMatrix.needsUpdate = true
+  })
+
+  return (
+    <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshBasicMaterial color="#e8c07a" transparent opacity={0.65} />
+    </instancedMesh>
+  )
+}
+
 /* ═══ 木グループ — 回転 + 幹/葉を分離描画 ═══ */
 function TreeGroup({
   mouseRef,
@@ -678,6 +844,12 @@ export function VoxelTree() {
       <MouseTracker mouseRef={mouseRef} />
       <TreeGroup mouseRef={mouseRef} />
 
+      {/* 背景のアニメーション */}
+      <AtmosphereParticles />
+      <VoxelCloud startPos={[-20, 8, -12]} speed={0.3} scale={1.8} opacity={0.12} />
+      <VoxelCloud startPos={[15, 12, -15]} speed={0.2} scale={2.5} opacity={0.08} />
+      <VoxelCloud startPos={[5, 2, -18]} speed={-0.15} scale={1.3} opacity={0.15} />
+
       {/* 小鳥たち — 異なる軌道径・速度・高さで飛行 */}
       <VoxelBird
         orbitRadius={4.5}
@@ -697,6 +869,10 @@ export function VoxelTree() {
         baseHeight={3.0}
         phase={4.5}
       />
+
+      {/* リスたち */}
+      <VoxelSquirrel orbitRadius={2.8} orbitSpeed={0.6} baseHeight={-4.95} phase={1.0} />
+      <VoxelSquirrel orbitRadius={3.5} orbitSpeed={-0.45} baseHeight={-4.95} phase={3.5} />
     </Canvas>
   )
 }
