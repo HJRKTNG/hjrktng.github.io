@@ -841,12 +841,12 @@ function VoxelGround({ mouseRef }: { mouseRef: React.MutableRefObject<Vector3 | 
     }
 
     // 画面下部全体に広がる背景の地面（広域）
-    const wideR = 16.0
-    const wideStep = 1.5
+    const wideR = 20.0
+    const wideStep = 1.0
     for (let x = -wideR; x <= wideR; x += wideStep) {
       for (let z = -wideR; z <= wideR; z += wideStep) {
         if (x * x + z * z > (R - 0.5) * (R - 0.5)) {
-          if (rng() > 0.2) {
+          if (rng() > 0.25) {
             const h = 1.0 + rng() * 2.0
             const drop = Math.max(0, (Math.sqrt(x*x + z*z) - R) * 0.15)
             const topY = -3.4 - rng() * 0.4 - drop
@@ -913,13 +913,13 @@ function VoxelGround({ mouseRef }: { mouseRef: React.MutableRefObject<Vector3 | 
         if (dist2D < pushR) {
           const force = Math.pow((pushR - dist2D) / pushR, 2.0)
           const angle = Math.atan2(dy, dx)
-          // 草や花が外側に弾け、上に浮く（剥がれるギミック）
-          bx += Math.cos(angle) * force * 1.5
-          by += force * 2.5
-          bz += Math.sin(angle) * force * 1.0
+          // 草や花が外側に弾け、上に浮く（剥がれるギミックをかなり控えめに）
+          bx += Math.cos(angle) * force * 0.8
+          by += force * 1.2
+          bz += Math.sin(angle) * force * 0.6
           
           if(b.isFlower) {
-            by += force * 1.0 // 花は少し余分に高く飛ぶ
+            by += force * 0.5 // 花は少し余分に高く飛ぶ
           }
         }
       }
@@ -1101,7 +1101,7 @@ export function VoxelTree() {
 
   return (
     <Canvas
-      camera={{ position: [-5, 1.0, 20], fov: 40, zoom: 1.1 }}
+      camera={{ position: [-8, 0, 20], fov: 40, zoom: 1.1 }}
       gl={{ antialias: true, alpha: true }}
       dpr={[1, 2]}
       style={{ background: 'transparent' }}

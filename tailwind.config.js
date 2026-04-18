@@ -5,24 +5,24 @@ export default {
     extend: {
       colors: {
         bg: {
-          base:     '#080807',
-          surface:  '#0d0c0a',
-          elevated: '#141310',
-          card:     '#1a1815',
+          base:     '#0e0d0b',
+          surface:  '#151410',
+          elevated: '#1c1a16',
+          card:     '#222018',
         },
         accent: {
           DEFAULT: '#d4a853',
           hover:   '#e8c07a',
-          dim:     'rgba(212,168,83,0.12)',
-          muted:   'rgba(212,168,83,0.5)',
+          dim:     'rgba(212,168,83,0.14)',
+          muted:   'rgba(212,168,83,0.55)',
         },
         ink: {
-          50:  '#f5f0e6',
-          100: '#e8e0d0',
-          200: '#c4bbaa',
-          300: '#9d9385',
-          400: '#706860',
-          500: '#3e3830',
+          50:  '#f7f2ea',
+          100: '#ece5d6',
+          200: '#d0c8b6',
+          300: '#b0a694',
+          400: '#877d6e',
+          500: '#524a3e',
         },
       },
       fontFamily: {

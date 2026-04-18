@@ -4,14 +4,14 @@
 
 html {
   scroll-behavior: smooth;
-  background-color: #080807;
+  background-color: #0e0d0b;
 }
 
 body {
   margin: 0;
   font-family: 'Outfit', 'Noto Sans JP', sans-serif;
   color: #e8e0d0;
-  background-color: #080807;
+  background-color: #0e0d0b;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -44,8 +44,8 @@ body::after {
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #080807; }
-::-webkit-scrollbar-thumb { background: #3e3830; border-radius: 2px; }
+::-webkit-scrollbar-track { background: #0e0d0b; }
+::-webkit-scrollbar-thumb { background: #524a3e; border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: #d4a853; }
 
 /* Selection */
