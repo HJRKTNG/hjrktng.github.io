@@ -554,11 +554,15 @@ function VoxelSquirrel({
   orbitSpeed,
   baseHeight,
   phase,
+  minAngle,
+  maxAngle,
 }: {
   orbitRadius: number
   orbitSpeed: number
   baseHeight: number
   phase: number
+  minAngle: number
+  maxAngle: number
 }) {
   const ref = useRef<Group>(null)
   const tail = useRef<Group>(null)
@@ -593,9 +597,7 @@ function VoxelSquirrel({
     if (isRunning) {
       st.angle += st.runSpeed * delta
       
-      // 画面の手前半円（0.1π 〜 0.9π）に動きを制限し、裏や画面外に行かないようにする
-      const minAngle = Math.PI * 0.1
-      const maxAngle = Math.PI * 0.9
+      // 手前で見切れないように、指定された角度の範囲内に動きを制限する
       if (st.angle < minAngle) {
         st.angle = minAngle
         st.runSpeed = Math.abs(st.runSpeed)
@@ -919,8 +921,8 @@ export function VoxelTree() {
       />
 
       {/* リスたち */}
-      <VoxelSquirrel orbitRadius={2.4} orbitSpeed={0.6} baseHeight={-5.9} phase={1.0} />
-      <VoxelSquirrel orbitRadius={2.8} orbitSpeed={-0.45} baseHeight={-5.9} phase={2.0} />
+      <VoxelSquirrel orbitRadius={2.4} orbitSpeed={0.6} baseHeight={-5.9} phase={0.0} minAngle={-Math.PI * 0.3} maxAngle={Math.PI * 0.15} />
+      <VoxelSquirrel orbitRadius={2.8} orbitSpeed={-0.45} baseHeight={-5.9} phase={Math.PI} minAngle={Math.PI * 0.85} maxAngle={Math.PI * 1.3} />
     </Canvas>
   )
 }
