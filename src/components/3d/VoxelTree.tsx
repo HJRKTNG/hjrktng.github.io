@@ -673,28 +673,31 @@ function VoxelSquirrel({
 }
 
 /* ═══════════════════════════════════════════
-   ボクセルクラウド (空のアニメーション用)
+   ボクセルクラウド (空の立体ブロック雲)
    ═══════════════════════════════════════════ */
 function VoxelCloud({
   startPos,
   speed,
   scale = 1,
-  opacity = 0.5,
 }: {
   startPos: [number, number, number]
   speed: number
   scale?: number
-  opacity?: number
 }) {
   const ref = useRef<Group>(null)
 
   const blocks = useMemo(() => {
     const res = []
     const rng = makeRng(startPos[0] * 100 + Math.abs(startPos[1]))
-    for (let i = 0; i < 9; i++) {
+    const numBlocks = 15
+    for (let i = 0; i < numBlocks; i++) {
+      const x = (rng() - 0.5) * 6
+      const y = (rng() - 0.5) * 2.5
+      const z = (rng() - 0.5) * 3
+      const s = 1.0 + rng() * 2.5
       res.push({
-        pos: [(rng() - 0.5) * 5, (rng() - 0.5) * 1.5, (rng() - 0.5) * 3] as [number, number, number],
-        size: 1.5 + rng() * 1.5,
+        pos: [x, y, z] as [number, number, number],
+        size: s,
       })
     }
     return res
@@ -715,7 +718,62 @@ function VoxelCloud({
       {blocks.map((b, i) => (
         <mesh key={i} position={b.pos}>
           <boxGeometry args={[b.size, b.size, b.size]} />
-          <meshStandardMaterial color="#8c6a40" transparent opacity={opacity} roughness={1} />
+          <meshStandardMaterial color="#d4b483" roughness={0.9} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+/* ═══════════════════════════════════════════
+   ボクセルグラウンド (浮島風の地面)
+   ═══════════════════════════════════════════ */
+function VoxelGround() {
+  const blocks = useMemo(() => {
+    const res = []
+    const rng = makeRng(888)
+    const R = 5.0
+    const step = 0.5
+    
+    // 土台（少し暗い土や岩）
+    const rockR = 4.2
+    for (let x = -rockR; x <= rockR; x += step * 1.5) {
+      for (let z = -rockR; z <= rockR; z += step * 1.5) {
+        if (x * x + z * z <= rockR * rockR) {
+          const h = 1.0 + rng() * 2.0
+          res.push({
+            pos: [x, -6.0 - 0.5 - h / 2, z] as [number, number, number],
+            size: [step * 1.5, h, step * 1.5] as [number, number, number],
+            color: '#2a1a0d',
+          })
+        }
+      }
+    }
+
+    // 表面（茶色の土と緑の草）
+    for (let x = -R; x <= R; x += step) {
+      for (let z = -R; z <= R; z += step) {
+        if (x * x + z * z <= R * R) {
+          const isGrass = rng() > 0.4
+          const h = 0.5 + rng() * 0.8
+          res.push({
+            pos: [x, -6.0 - h / 2, z] as [number, number, number],
+            size: [step, h, step] as [number, number, number],
+            color: isGrass ? '#4a5d23' : '#352010',
+          })
+        }
+      }
+    }
+
+    return res
+  }, [])
+
+  return (
+    <group>
+      {blocks.map((b, i) => (
+        <mesh key={i} position={b.pos}>
+          <boxGeometry args={b.size} />
+          <meshStandardMaterial color={b.color} roughness={0.9} />
         </mesh>
       ))}
     </group>
@@ -865,7 +923,7 @@ export function VoxelTree() {
 
   return (
     <Canvas
-      camera={{ position: [0, 1.5, 20], fov: 40, zoom: 1.2 }}
+      camera={{ position: [0, -1.0, 20], fov: 40, zoom: 1.1 }}
       gl={{ antialias: true, alpha: true }}
       dpr={[1, 2]}
       style={{ background: 'transparent' }}
@@ -894,11 +952,14 @@ export function VoxelTree() {
       <MouseTracker mouseRef={mouseRef} />
       <TreeGroup mouseRef={mouseRef} />
 
+      {/* 浮島風の地面 */}
+      <VoxelGround />
+
       {/* 背景のアニメーション */}
       <AtmosphereParticles />
-      <VoxelCloud startPos={[-20, 8, -12]} speed={0.3} scale={1.8} opacity={0.12} />
-      <VoxelCloud startPos={[15, 12, -15]} speed={0.2} scale={2.5} opacity={0.08} />
-      <VoxelCloud startPos={[5, 2, -18]} speed={-0.15} scale={1.3} opacity={0.15} />
+      <VoxelCloud startPos={[-20, 8, -12]} speed={0.3} scale={1.8} />
+      <VoxelCloud startPos={[15, 12, -15]} speed={0.2} scale={2.5} />
+      <VoxelCloud startPos={[5, 2, -18]} speed={-0.15} scale={1.3} />
 
       {/* 小鳥たち — 異なる軌道径・速度・高さで飛行 */}
       <VoxelBird
