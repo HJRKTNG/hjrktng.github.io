@@ -732,17 +732,17 @@ function VoxelGround() {
   const blocks = useMemo(() => {
     const res = []
     const rng = makeRng(888)
-    const R = 5.0
+    const R = 6.0
     const step = 0.5
     
     // 土台（少し暗い土や岩）
-    const rockR = 4.2
+    const rockR = 5.0
     for (let x = -rockR; x <= rockR; x += step * 1.5) {
       for (let z = -rockR; z <= rockR; z += step * 1.5) {
         if (x * x + z * z <= rockR * rockR) {
           const h = 1.0 + rng() * 2.0
           res.push({
-            pos: [x, -6.0 - 0.5 - h / 2, z] as [number, number, number],
+            pos: [x, -3.4 - 0.5 - h / 2, z] as [number, number, number],
             size: [step * 1.5, h, step * 1.5] as [number, number, number],
             color: '#2a1a0d',
           })
@@ -757,10 +757,34 @@ function VoxelGround() {
           const isGrass = rng() > 0.4
           const h = 0.5 + rng() * 0.8
           res.push({
-            pos: [x, -6.0 - h / 2, z] as [number, number, number],
+            pos: [x, -3.4 - h / 2, z] as [number, number, number],
             size: [step, h, step] as [number, number, number],
             color: isGrass ? '#4a5d23' : '#352010',
           })
+        }
+      }
+    }
+
+    // 画面下部全体に広がる背景の地面（大きめのボクセルで敷き詰める）
+    const wideR = 16.0
+    const wideStep = 1.5
+    for (let x = -wideR; x <= wideR; x += wideStep) {
+      for (let z = -wideR; z <= wideR; z += wideStep) {
+        // メインの島と被る部分はスキップ
+        if (x * x + z * z > (R - 0.5) * (R - 0.5)) {
+          // ランダムに間引いて地形に起伏をもたせる
+          if (rng() > 0.2) {
+            const h = 1.0 + rng() * 2.0
+            // 端の方は少し下げる
+            const drop = Math.max(0, (Math.sqrt(x*x + z*z) - R) * 0.15)
+            const ySurface = -3.4 - rng() * 0.4 - drop
+            const isGrass = rng() > 0.6
+            res.push({
+              pos: [x, ySurface - h / 2, z] as [number, number, number],
+              size: [wideStep * 0.95, h, wideStep * 0.95] as [number, number, number],
+              color: isGrass ? '#3a4a1c' : '#2d1b0e', // 外側は少し暗く
+            })
+          }
         }
       }
     }
@@ -923,7 +947,7 @@ export function VoxelTree() {
 
   return (
     <Canvas
-      camera={{ position: [0, -1.0, 20], fov: 40, zoom: 1.1 }}
+      camera={{ position: [0, 0, 20], fov: 40, zoom: 1.1 }}
       gl={{ antialias: true, alpha: true }}
       dpr={[1, 2]}
       style={{ background: 'transparent' }}
@@ -982,8 +1006,8 @@ export function VoxelTree() {
       />
 
       {/* リスたち */}
-      <VoxelSquirrel orbitRadius={2.4} orbitSpeed={0.6} baseHeight={-5.9} phase={0.0} minAngle={-Math.PI * 0.3} maxAngle={Math.PI * 0.15} />
-      <VoxelSquirrel orbitRadius={2.8} orbitSpeed={-0.45} baseHeight={-5.9} phase={Math.PI} minAngle={Math.PI * 0.85} maxAngle={Math.PI * 1.3} />
+      <VoxelSquirrel orbitRadius={2.4} orbitSpeed={0.6} baseHeight={-3.4} phase={0.0} minAngle={-Math.PI * 0.3} maxAngle={Math.PI * 0.15} />
+      <VoxelSquirrel orbitRadius={2.8} orbitSpeed={-0.45} baseHeight={-3.4} phase={Math.PI} minAngle={Math.PI * 0.85} maxAngle={Math.PI * 1.3} />
     </Canvas>
   )
 }
