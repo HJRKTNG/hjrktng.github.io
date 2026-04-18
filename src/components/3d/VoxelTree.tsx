@@ -564,22 +564,58 @@ function VoxelSquirrel({
   const tail = useRef<Group>(null)
   const s = 0.16 // ボクセルサイズ
 
-  useFrame(({ clock }) => {
-    const rawT = clock.elapsedTime * orbitSpeed + phase
-    // 立ち止まりを作るためにサイン波を足す
-    const t = rawT + Math.sin(rawT * 4) * 0.2
+  const state = useRef({
+    angle: phase,
+    mode: 'stop' as 'run' | 'stop',
+    timer: Math.random() * 2,
+    runSpeed: orbitSpeed * 1.5,
+    hopPhase: 0,
+  })
+
+  useFrame(({ clock }, delta) => {
+    const st = state.current
+    st.timer -= delta
+
+    if (st.timer <= 0) {
+      if (st.mode === 'stop') {
+        st.mode = 'run'
+        st.timer = 0.3 + Math.random() * 0.8 // 短い時間ダッシュ
+        // 基本は順方向だがたまに逆走
+        st.runSpeed = orbitSpeed * (Math.random() > 0.2 ? (1.5 + Math.random()) : -(0.8 + Math.random()))
+      } else {
+        st.mode = 'stop'
+        st.timer = 0.5 + Math.random() * 2.0 // 長めに立ち止まる
+        st.hopPhase = 0
+      }
+    }
+
+    const isRunning = st.mode === 'run'
+    if (isRunning) {
+      st.angle += st.runSpeed * delta
+      st.hopPhase += delta * 20
+    }
 
     if (ref.current) {
+      const hOffset = isRunning ? Math.abs(Math.sin(st.hopPhase)) * 0.15 : 0
       ref.current.position.set(
-        Math.cos(t) * orbitRadius,
-        baseHeight + Math.abs(Math.sin(rawT * 12)) * 0.1, // 細かく跳ねる
-        Math.sin(t) * orbitRadius,
+        Math.cos(st.angle) * orbitRadius,
+        baseHeight + hOffset,
+        Math.sin(st.angle) * orbitRadius,
       )
-      ref.current.rotation.y = -t + Math.PI / 2
+
+      // 進行方向に滑らかに向きを変える
+      const targetY = st.runSpeed > 0 ? -st.angle + Math.PI / 2 : -st.angle - Math.PI / 2
+      const curY = ref.current.rotation.y
+      let diff = (targetY - curY) % (Math.PI * 2)
+      if (diff > Math.PI) diff -= Math.PI * 2
+      if (diff < -Math.PI) diff += Math.PI * 2
+      ref.current.rotation.y += diff * 0.2
     }
     if (tail.current) {
-      // しっぽの揺れ
-      tail.current.rotation.x = Math.sin(rawT * 8) * 0.15 + 0.2
+      // しっぽの揺れ: 走るときは寝て大きく、止まるときは立って小さく
+      tail.current.rotation.x = isRunning
+        ? Math.sin(st.hopPhase) * 0.3 + 0.4
+        : Math.sin(clock.elapsedTime * 3 + phase) * 0.05 + 0.1
     }
   })
 
