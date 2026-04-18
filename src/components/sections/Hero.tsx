@@ -40,8 +40,8 @@ export function Hero() {
       {/* Horizontal midline decoration */}
       <div className="absolute top-1/2 left-0 right-0 h-px bg-ink-500/8 pointer-events-none" />
 
-      {/* ── 3D Voxel Tree — right half on desktop, background on mobile ── */}
-      <div className="absolute inset-0 md:left-[45%] opacity-70 md:opacity-100 pointer-events-none">
+      {/* ── 3D Voxel Tree — Full screen background ── */}
+      <div className="absolute inset-0 opacity-70 md:opacity-100 pointer-events-none">
         <VoxelTree />
       </div>
 
@@ -49,7 +49,7 @@ export function Hero() {
       <div
         className="absolute inset-0 md:right-1/2 pointer-events-none hidden md:block"
         style={{
-          background: 'linear-gradient(90deg, #080807 0%, rgba(8,8,7,0.8) 60%, transparent 100%)',
+          background: 'linear-gradient(90deg, #0e0d0b 0%, rgba(14,13,11,0.8) 60%, transparent 100%)',
         }}
       />
 

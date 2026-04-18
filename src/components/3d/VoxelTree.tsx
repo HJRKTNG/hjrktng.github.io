@@ -679,48 +679,96 @@ function VoxelCloud({
   startPos,
   speed,
   scale = 1,
+  mouseRef,
 }: {
   startPos: [number, number, number]
   speed: number
   scale?: number
+  mouseRef: React.MutableRefObject<Vector3 | null>
 }) {
-  const ref = useRef<Group>(null)
+  const meshRef = useRef<InstancedMeshType>(null)
+  const groupRef = useRef<Group>(null)
+  const dummy = useMemo(() => new Object3D(), [])
 
   const blocks = useMemo(() => {
     const res = []
     const rng = makeRng(startPos[0] * 100 + Math.abs(startPos[1]))
-    const numBlocks = 15
+    const numBlocks = 25 // 細かいブロックにする
     for (let i = 0; i < numBlocks; i++) {
-      const x = (rng() - 0.5) * 6
-      const y = (rng() - 0.5) * 2.5
-      const z = (rng() - 0.5) * 3
-      const s = 1.0 + rng() * 2.5
+      const x = (rng() - 0.5) * 4.0
+      const y = (rng() - 0.5) * 1.5
+      const z = (rng() - 0.5) * 2.0
+      const s = 0.5 + rng() * 1.2
       res.push({
-        pos: [x, y, z] as [number, number, number],
-        size: s,
+        ox: x, oy: y, oz: z,
+        s: s,
+        phase: rng() * Math.PI * 2,
       })
     }
     return res
   }, [startPos])
 
+  const currentPos = useRef(new Vector3(...startPos))
+
   useFrame(({ clock }) => {
-    if (ref.current) {
-      const t = clock.elapsedTime
-      let x = startPos[0] + t * speed
-      if (speed > 0 && x > 35) x = -35 + (x - 35)
-      if (speed < 0 && x < -35) x = 35 + (x + 35)
-      ref.current.position.set(x, startPos[1], startPos[2])
+    const t = clock.elapsedTime
+    let x = startPos[0] + t * speed
+    if (speed > 0 && x > 40) x = -40 + (x - 40)
+    if (speed < 0 && x < -40) x = 40 + (x + 40)
+
+    currentPos.current.set(x, startPos[1], startPos[2])
+
+    if (groupRef.current) {
+      groupRef.current.position.copy(currentPos.current)
     }
+
+    if (!meshRef.current) return
+
+    const pushR = 4.0
+    let mx = 0, my = 0, hasMouse = false
+    if (mouseRef.current) {
+      mx = mouseRef.current.x
+      my = mouseRef.current.y
+      hasMouse = true
+    }
+
+    blocks.forEach((b, i) => {
+      let bx = b.ox
+      let by = b.oy
+      let bz = b.oz
+
+      if (hasMouse) {
+        const wx = currentPos.current.x + bx * scale
+        const wy = currentPos.current.y + by * scale
+        const dx = wx - mx
+        const dy = wy - my
+        const dist2D = Math.sqrt(dx * dx + dy * dy)
+        
+        if (dist2D < pushR) {
+          const force = Math.pow((pushR - dist2D) / pushR, 2.0)
+          const angle = Math.atan2(dy, dx)
+          bx += Math.cos(angle) * force * 1.5
+          by += Math.sin(angle) * force * 1.5 + force * 0.5
+          bz += force * 1.0
+        }
+      }
+
+      by += Math.sin(t * 2 + b.phase) * 0.1
+
+      dummy.position.set(bx, by, bz)
+      dummy.scale.setScalar(b.s)
+      dummy.updateMatrix()
+      meshRef.current!.setMatrixAt(i, dummy.matrix)
+    })
+    meshRef.current.instanceMatrix.needsUpdate = true
   })
 
   return (
-    <group ref={ref} scale={scale}>
-      {blocks.map((b, i) => (
-        <mesh key={i} position={b.pos}>
-          <boxGeometry args={[b.size, b.size, b.size]} />
-          <meshStandardMaterial color="#d4b483" roughness={0.9} />
-        </mesh>
-      ))}
+    <group ref={groupRef} scale={scale}>
+      <instancedMesh ref={meshRef} args={[undefined, undefined, blocks.length]}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshStandardMaterial color="#ebdfcc" roughness={0.9} />
+      </instancedMesh>
     </group>
   )
 }
@@ -728,78 +776,184 @@ function VoxelCloud({
 /* ═══════════════════════════════════════════
    ボクセルグラウンド (浮島風の地面)
    ═══════════════════════════════════════════ */
-function VoxelGround() {
-  const blocks = useMemo(() => {
-    const res = []
+/* ═══════════════════════════════════════════
+   ボクセルグラウンド (浮島風の地面・草剥がれギミック付き)
+   ═══════════════════════════════════════════ */
+function VoxelGround({ mouseRef }: { mouseRef: React.MutableRefObject<Vector3 | null> }) {
+  const meshRefGrass = useRef<InstancedMeshType>(null)
+  const meshRefSoil = useRef<InstancedMeshType>(null)
+  const dummy = useMemo(() => new Object3D(), [])
+
+  // GrassとSoilのブロック群を生成
+  const { grass, soil } = useMemo(() => {
+    const g = []
+    const s = []
     const rng = makeRng(888)
     const R = 6.0
     const step = 0.5
     
-    // 土台（少し暗い土や岩）
+    // 表面は茶色を用いず複数パターンの緑、中は茶色のパレット
+    const paletteGrass = ['#384d1a', '#4a5d23', '#5c7028', '#6a822b']
+    const paletteFlower = ['#e84a5f', '#ff847c', '#f8b195', '#f6e58d']
+    const paletteSoil = ['#352010', '#2a1a0d', '#1f1309']
+    
+    const pushGrass = (pos: number[], size: number[], color: string, isF: boolean) => {
+      g.push({ ox: pos[0], oy: pos[1], oz: pos[2], size, color, isFlower: isF })
+    }
+    const pushSoil = (pos: number[], size: number[], color: string) => {
+      s.push({ ox: pos[0], oy: pos[1], oz: pos[2], size, color })
+    }
+
+    // 土台・下層の土 (表面からは見えにくい・または少し下)
     const rockR = 5.0
     for (let x = -rockR; x <= rockR; x += step * 1.5) {
       for (let z = -rockR; z <= rockR; z += step * 1.5) {
         if (x * x + z * z <= rockR * rockR) {
           const h = 1.0 + rng() * 2.0
-          res.push({
-            pos: [x, -3.4 - 0.5 - h / 2, z] as [number, number, number],
-            size: [step * 1.5, h, step * 1.5] as [number, number, number],
-            color: '#2a1a0d',
-          })
+          pushSoil([x, -3.4 - 0.5 - h / 2, z], [step * 1.5, h, step * 1.5], paletteSoil[Math.floor(rng() * paletteSoil.length)])
         }
       }
     }
 
-    // 表面（茶色の土と緑の草）
+    // メインの島（表面の草・花、その直下の下地としての土）
     for (let x = -R; x <= R; x += step) {
       for (let z = -R; z <= R; z += step) {
         if (x * x + z * z <= R * R) {
-          const isGrass = rng() > 0.4
           const h = 0.5 + rng() * 0.8
-          res.push({
-            pos: [x, -3.4 - h / 2, z] as [number, number, number],
-            size: [step, h, step] as [number, number, number],
-            color: isGrass ? '#4a5d23' : '#352010',
-          })
+          const topY = -3.4 - h / 2
+          
+          // 下層の土ブロック（同じ位置に配置）
+          pushSoil([x, topY, z], [step * 0.95, h, step * 0.95], paletteSoil[Math.floor(rng() * paletteSoil.length)])
+          
+          // 上層の草ブロック（土の上に載るイメージ）
+          // 草は土より少し高く配置して完全に覆う
+          const isFlower = rng() > 0.92
+          let color = paletteGrass[Math.floor(rng() * paletteGrass.length)]
+          let isF = false
+          if (isFlower) {
+            color = paletteFlower[Math.floor(rng() * paletteFlower.length)]
+            isF = true
+          }
+          // 草や花は動く
+          pushGrass([x, topY + (isF ? 0.3 : 0.1), z], [step * 1.0, isF ? step * 0.8 : h * 1.1, step * 1.0], color, isF)
         }
       }
     }
 
-    // 画面下部全体に広がる背景の地面（大きめのボクセルで敷き詰める）
+    // 画面下部全体に広がる背景の地面（広域）
     const wideR = 16.0
     const wideStep = 1.5
     for (let x = -wideR; x <= wideR; x += wideStep) {
       for (let z = -wideR; z <= wideR; z += wideStep) {
-        // メインの島と被る部分はスキップ
         if (x * x + z * z > (R - 0.5) * (R - 0.5)) {
-          // ランダムに間引いて地形に起伏をもたせる
           if (rng() > 0.2) {
             const h = 1.0 + rng() * 2.0
-            // 端の方は少し下げる
             const drop = Math.max(0, (Math.sqrt(x*x + z*z) - R) * 0.15)
-            const ySurface = -3.4 - rng() * 0.4 - drop
-            const isGrass = rng() > 0.6
-            res.push({
-              pos: [x, ySurface - h / 2, z] as [number, number, number],
-              size: [wideStep * 0.95, h, wideStep * 0.95] as [number, number, number],
-              color: isGrass ? '#3a4a1c' : '#2d1b0e', // 外側は少し暗く
-            })
+            const topY = -3.4 - rng() * 0.4 - drop
+            
+            // 下地の土
+            pushSoil([x, topY, z], [wideStep * 0.95, h, wideStep * 0.95], paletteSoil[Math.floor(rng() * paletteSoil.length)])
+            
+            // 上層の草
+            const isFlower = rng() > 0.95
+            let color = isFlower ? paletteFlower[0] : '#3a4a1c'
+            if (!isFlower && rng() > 0.5) color = '#2e3b15'
+
+            pushGrass([x, topY + 0.1, z], [wideStep * 1.0, h * 1.05, wideStep * 1.0], color, isFlower)
           }
         }
       }
     }
-
-    return res
+    return { grass: g, soil: s }
   }, [])
+
+  // Soil (土) は静的
+  useEffect(() => {
+    if (!meshRefSoil.current) return
+    soil.forEach((b, i) => {
+      dummy.position.set(b.ox, b.oy, b.oz)
+      dummy.scale.set(b.size[0], b.size[1], b.size[2])
+      dummy.updateMatrix()
+      meshRefSoil.current!.setMatrixAt(i, dummy.matrix)
+      meshRefSoil.current!.setColorAt(i, new Color(b.color))
+    })
+    meshRefSoil.current.instanceMatrix.needsUpdate = true
+    if(meshRefSoil.current.instanceColor) meshRefSoil.current.instanceColor.needsUpdate = true
+  }, [soil, dummy])
+
+  // Grass (草・花) は色設定と毎フレームのインタラクション
+  useEffect(() => {
+    if (!meshRefGrass.current) return
+    grass.forEach((b, i) => {
+      meshRefGrass.current!.setColorAt(i, new Color(b.color))
+    })
+    if(meshRefGrass.current.instanceColor) meshRefGrass.current.instanceColor.needsUpdate = true
+  }, [grass])
+
+  useFrame(() => {
+    if (!meshRefGrass.current) return
+    
+    const pushR = 3.5
+    let mx = 0, my = 0, hasMouse = false
+    if (mouseRef.current) {
+      mx = mouseRef.current.x
+      my = mouseRef.current.y
+      hasMouse = true
+    }
+
+    grass.forEach((b, i) => {
+      let bx = b.ox
+      let by = b.oy
+      let bz = b.oz
+
+      if (hasMouse) {
+        const dx = bx - mx
+        const dy = by - my
+        const dist2D = Math.sqrt(dx * dx + dy * dy)
+        if (dist2D < pushR) {
+          const force = Math.pow((pushR - dist2D) / pushR, 2.0)
+          const angle = Math.atan2(dy, dx)
+          // 草や花が外側に弾け、上に浮く（剥がれるギミック）
+          bx += Math.cos(angle) * force * 1.5
+          by += force * 2.5
+          bz += Math.sin(angle) * force * 1.0
+          
+          if(b.isFlower) {
+            by += force * 1.0 // 花は少し余分に高く飛ぶ
+          }
+        }
+      }
+
+      dummy.position.set(bx, by, bz)
+      dummy.scale.set(b.size[0], b.size[1], b.size[2])
+      
+      // 飛んでいる時は少し回転させるとより立体的でボクセルっぽい
+      if (hasMouse && (bx !== b.ox || by !== b.oy)) {
+        const dx = bx - b.ox
+        const dy = by - b.oy
+        dummy.rotation.set(dy * 0.5, dx * 0.5, 0)
+      } else {
+        dummy.rotation.set(0, 0, 0)
+      }
+
+      dummy.updateMatrix()
+      meshRefGrass.current!.setMatrixAt(i, dummy.matrix)
+    })
+    meshRefGrass.current.instanceMatrix.needsUpdate = true
+  })
 
   return (
     <group>
-      {blocks.map((b, i) => (
-        <mesh key={i} position={b.pos}>
-          <boxGeometry args={b.size} />
-          <meshStandardMaterial color={b.color} roughness={0.9} />
-        </mesh>
-      ))}
+      {/* 土（動かない下層） */}
+      <instancedMesh ref={meshRefSoil} args={[undefined, undefined, soil.length]}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshStandardMaterial roughness={0.95} />
+      </instancedMesh>
+      {/* 草と花（インタラクティブに動いて剥がれる上層） */}
+      <instancedMesh ref={meshRefGrass} args={[undefined, undefined, grass.length]}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshStandardMaterial roughness={0.8} />
+      </instancedMesh>
     </group>
   )
 }
@@ -947,7 +1101,7 @@ export function VoxelTree() {
 
   return (
     <Canvas
-      camera={{ position: [0, 0, 20], fov: 40, zoom: 1.1 }}
+      camera={{ position: [-5, 1.0, 20], fov: 40, zoom: 1.1 }}
       gl={{ antialias: true, alpha: true }}
       dpr={[1, 2]}
       style={{ background: 'transparent' }}
@@ -976,14 +1130,16 @@ export function VoxelTree() {
       <MouseTracker mouseRef={mouseRef} />
       <TreeGroup mouseRef={mouseRef} />
 
-      {/* 浮島風の地面 */}
-      <VoxelGround />
+      {/* 浮島風の地面（草が剥がれるインタラクション付き） */}
+      <VoxelGround mouseRef={mouseRef} />
 
       {/* 背景のアニメーション */}
       <AtmosphereParticles />
-      <VoxelCloud startPos={[-20, 8, -12]} speed={0.3} scale={1.8} />
-      <VoxelCloud startPos={[15, 12, -15]} speed={0.2} scale={2.5} />
-      <VoxelCloud startPos={[5, 2, -18]} speed={-0.15} scale={1.3} />
+      <VoxelCloud startPos={[-25, 10, -15]} speed={0.25} scale={1.2} mouseRef={mouseRef} />
+      <VoxelCloud startPos={[-12, 14, -20]} speed={0.15} scale={1.0} mouseRef={mouseRef} />
+      <VoxelCloud startPos={[8, 11, -12]} speed={0.20} scale={1.4} mouseRef={mouseRef} />
+      <VoxelCloud startPos={[20, 15, -18]} speed={0.10} scale={1.1} mouseRef={mouseRef} />
+      <VoxelCloud startPos={[0, 6, -22]} speed={-0.12} scale={0.9} mouseRef={mouseRef} />
 
       {/* 小鳥たち — 異なる軌道径・速度・高さで飛行 */}
       <VoxelBird
