@@ -815,7 +815,7 @@ export function VoxelTree() {
 
   return (
     <Canvas
-      camera={{ position: [0, 1.5, 20], fov: 40 }}
+      camera={{ position: [0, 1.5, 20], fov: 40, zoom: 1.5 }}
       gl={{ antialias: true, alpha: true }}
       dpr={[1, 2]}
       style={{ background: 'transparent' }}
@@ -871,8 +871,8 @@ export function VoxelTree() {
       />
 
       {/* リスたち */}
-      <VoxelSquirrel orbitRadius={2.8} orbitSpeed={0.6} baseHeight={-4.95} phase={1.0} />
-      <VoxelSquirrel orbitRadius={3.5} orbitSpeed={-0.45} baseHeight={-4.95} phase={3.5} />
+      <VoxelSquirrel orbitRadius={2.8} orbitSpeed={0.6} baseHeight={-5.9} phase={1.0} />
+      <VoxelSquirrel orbitRadius={3.5} orbitSpeed={-0.45} baseHeight={-5.9} phase={3.5} />
     </Canvas>
   )
 }
