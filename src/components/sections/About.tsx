@@ -1,9 +1,59 @@
-import { meta, about } from '../../data/portfolio'
+import { meta, about, journey, ui } from '../../data/portfolio'
 import { SectionHeading } from '../ui/SectionHeading'
 import { useScrollReveal } from '../../hooks/useScrollReveal'
+import { useLang } from '../../i18n'
+
+function JourneyTimeline() {
+  const { t } = useLang()
+  const { ref, visible } = useScrollReveal({ threshold: 0.1 })
+
+  return (
+    <div ref={ref} className="mt-20">
+      <div className="flex items-center gap-4 mb-10">
+        <span className="font-mono text-[10px] text-accent tracking-[0.3em] uppercase">
+          {t(ui.sections.journeyTitle)}
+        </span>
+        <div className="h-px flex-1 bg-gradient-to-r from-accent/30 to-transparent" />
+      </div>
+
+      <div className="relative pl-2">
+        {/* vertical line */}
+        <div className="absolute left-[7px] top-2 bottom-2 w-px bg-ink-500/30" />
+
+        <div className="space-y-10">
+          {journey.map((item, i) => (
+            <div
+              key={item.year}
+              className={`relative pl-10 transition-all duration-700 ${
+                visible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-6'
+              }`}
+              style={{ transitionDelay: visible ? `${i * 150}ms` : '0ms' }}
+            >
+              {/* voxel node */}
+              <div className="absolute left-0 top-1.5 w-3.5 h-3.5 bg-bg-base border border-accent/60 rotate-45">
+                <div className="absolute inset-[3px] bg-accent/70" />
+              </div>
+
+              <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-2">
+                <span className="font-mono text-sm text-accent tabular-nums tracking-wider">
+                  {item.year}
+                </span>
+                <h4 className="text-ink-100 font-medium text-[15px]">{t(item.title)}</h4>
+              </div>
+              <p className="text-sm text-ink-300 font-light leading-relaxed max-w-2xl">
+                {t(item.body)}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export function About() {
-  const { ref: leftRef,  visible: leftVisible  } = useScrollReveal()
+  const { t } = useLang()
+  const { ref: leftRef, visible: leftVisible } = useScrollReveal()
   const { ref: rightRef, visible: rightVisible } = useScrollReveal({ rootMargin: '0px 0px -40px 0px' })
 
   return (
@@ -15,7 +65,7 @@ export function About() {
       />
 
       <div className="max-w-6xl mx-auto px-8">
-        <SectionHeading sub="自己紹介" num="01">About</SectionHeading>
+        <SectionHeading sub={t(ui.sections.aboutSub)} num="01">About</SectionHeading>
 
         <div className="grid md:grid-cols-3 gap-12">
           {/* Text */}
@@ -26,10 +76,10 @@ export function About() {
             }`}
           >
             <p className="text-ink-200 leading-loose text-[15px] font-light whitespace-pre-line">
-              {about.intro}
+              {t(about.intro)}
             </p>
             <p className="text-ink-300 leading-loose text-[15px] font-light">
-              {about.goals}
+              {t(about.goals)}
             </p>
 
             {/* Abroad highlight */}
@@ -42,7 +92,7 @@ export function About() {
                 International Experience
               </p>
               <p className="text-sm text-ink-200 relative z-10 font-light leading-relaxed">
-                {about.abroad}
+                {t(about.abroad)}
               </p>
             </div>
           </div>
@@ -59,19 +109,14 @@ export function About() {
                 Profile
               </h3>
               <dl className="space-y-5">
-                {[
-                  { label: '大学',   value: '九州大学', sub: '工学部 電気情報工学科 4年' },
-                  { label: '出身校', value: '開成高等学校' },
-                  { label: '居住地', value: '福岡' },
-                  { label: 'TOEIC',  value: '670点' },
-                ].map(item => (
-                  <div key={item.label}>
-                    <dt className="text-[11px] text-ink-400 font-mono mb-1 tracking-wider">
-                      {item.label.toUpperCase()}
+                {about.profile.map(item => (
+                  <div key={item.label.en}>
+                    <dt className="text-[11px] text-ink-400 font-mono mb-1 tracking-wider uppercase">
+                      {t(item.label)}
                     </dt>
-                    <dd className="text-sm text-ink-200 font-light">{item.value}</dd>
+                    <dd className="text-sm text-ink-200 font-light">{t(item.value)}</dd>
                     {item.sub && (
-                      <dd className="text-xs text-ink-400 font-light mt-0.5">{item.sub}</dd>
+                      <dd className="text-xs text-ink-400 font-light mt-0.5">{t(item.sub)}</dd>
                     )}
                   </div>
                 ))}
@@ -101,6 +146,9 @@ export function About() {
             </div>
           </div>
         </div>
+
+        {/* Journey timeline */}
+        <JourneyTimeline />
       </div>
     </section>
   )

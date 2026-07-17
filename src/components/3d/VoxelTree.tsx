@@ -1042,6 +1042,122 @@ function TreeGroup({
   )
 }
 
+/* ═══════════════════════════════════════════
+   スクロール連動 — カメラ後退・光の夕暮れ化・落ち葉
+   ヒーローを離れるにつれて世界が静かに変化する
+   ═══════════════════════════════════════════ */
+function useScrollProgress() {
+  const progressRef = useRef(0)
+  useEffect(() => {
+    const onScroll = () => {
+      const vh = window.innerHeight || 1
+      progressRef.current = Math.min(1, Math.max(0, window.scrollY / (vh * 1.1)))
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+  return progressRef
+}
+
+function ScrollRig({ progressRef }: { progressRef: React.MutableRefObject<number> }) {
+  const { camera } = useThree()
+  const lightRef = useRef<import('three').DirectionalLight>(null)
+  const warm = useMemo(() => new Color('#fde8b8'), [])
+  const dusk = useMemo(() => new Color('#e8955a'), [])
+  const tmp = useMemo(() => new Color(), [])
+
+  useFrame(() => {
+    const p = progressRef.current
+    // カメラ: 引きながら少し上へ（世界を見渡す視点に）
+    const tx = -8 + p * 4
+    const ty = 0 + p * 3.2
+    const tz = 20 + p * 7
+    camera.position.x += (tx - camera.position.x) * 0.06
+    camera.position.y += (ty - camera.position.y) * 0.06
+    camera.position.z += (tz - camera.position.z) * 0.06
+    camera.lookAt(0, 0.5 - p * 1.5, 0)
+    // 光: スクロールで夕暮れ色に
+    if (lightRef.current) {
+      tmp.copy(warm).lerp(dusk, p)
+      lightRef.current.color.copy(tmp)
+      lightRef.current.intensity = 1.3 - p * 0.35
+    }
+  })
+
+  return (
+    <directionalLight ref={lightRef} position={[6, 9, 5]} intensity={1.3} color="#fde8b8" />
+  )
+}
+
+/* 落ち葉 — スクロール量に応じて数が増える */
+function FallingLeaves({ progressRef }: { progressRef: React.MutableRefObject<number> }) {
+  const meshRef = useRef<InstancedMeshType>(null)
+  const dummy = useMemo(() => new Object3D(), [])
+  const count = 42
+
+  const leaves = useMemo(() => {
+    const rng = makeRng(777)
+    return Array.from({ length: count }).map(() => ({
+      x: (rng() - 0.5) * 9,
+      z: (rng() - 0.5) * 7,
+      startY: 2.5 + rng() * 3.5,
+      fallSpeed: 0.5 + rng() * 0.7,
+      swayAmp: 0.5 + rng() * 0.8,
+      swayFreq: 0.8 + rng() * 1.2,
+      spin: rng() * 4,
+      phase: rng() * 100,
+      color: ['#d4a853', '#c9873a', '#a8642a', '#88dc84'][Math.floor(rng() * 4)],
+    }))
+  }, [])
+
+  useEffect(() => {
+    if (!meshRef.current) return
+    const c = new Color()
+    leaves.forEach((leaf, i) => {
+      c.set(leaf.color)
+      meshRef.current!.setColorAt(i, c)
+    })
+    if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true
+  }, [leaves])
+
+  useFrame(({ clock }) => {
+    if (!meshRef.current) return
+    const t = clock.elapsedTime
+    const p = progressRef.current
+    const visibleCount = Math.floor(p * count)
+
+    leaves.forEach((leaf, i) => {
+      if (i >= visibleCount) {
+        // 非表示（縮小して隠す）
+        dummy.position.set(0, -50, 0)
+        dummy.scale.setScalar(0.001)
+      } else {
+        const cycle = 9 / leaf.fallSpeed
+        const local = ((t * leaf.fallSpeed + leaf.phase) % cycle) / cycle
+        const y = leaf.startY - local * (leaf.startY + 4.5)
+        const x = leaf.x + Math.sin(t * leaf.swayFreq + leaf.phase) * leaf.swayAmp
+        const z = leaf.z + Math.cos(t * leaf.swayFreq * 0.7 + leaf.phase) * leaf.swayAmp * 0.6
+        dummy.position.set(x, y, z)
+        dummy.rotation.set(t * leaf.spin, t * leaf.spin * 0.7, leaf.phase)
+        // 地面付近でフェード（スケールで表現）
+        const fade = y < -3.5 ? Math.max(0.001, (y + 4.5)) : 1
+        dummy.scale.setScalar(0.14 * Math.min(1, fade))
+      }
+      dummy.updateMatrix()
+      meshRef.current!.setMatrixAt(i, dummy.matrix)
+    })
+    meshRef.current.instanceMatrix.needsUpdate = true
+  })
+
+  return (
+    <instancedMesh ref={meshRef} args={[undefined, undefined, count]} frustumCulled={false}>
+      <boxGeometry args={[1, 0.15, 1]} />
+      <meshStandardMaterial roughness={0.8} />
+    </instancedMesh>
+  )
+}
+
 /* ═══ マウス位置追跡 ═══ */
 function MouseTracker({
   mouseRef,
@@ -1079,6 +1195,7 @@ function MouseTracker({
 /* ═══ メインエクスポート ═══ */
 export function VoxelTree() {
   const mouseRef = useRef<Vector3 | null>(null)
+  const progressRef = useScrollProgress()
   const [reduceMotion, setReduceMotion] = useState(false)
 
   useEffect(() => {
@@ -1106,9 +1223,9 @@ export function VoxelTree() {
       dpr={[1, 2]}
       style={{ background: 'transparent' }}
     >
-      {/* 暖かみのある環境光 */}
+      {/* 暖かみのある環境光 + スクロール連動ライト/カメラ */}
       <ambientLight intensity={0.35} color="#fdf4e3" />
-      <directionalLight position={[6, 9, 5]} intensity={1.3} color="#fde8b8" />
+      <ScrollRig progressRef={progressRef} />
       <directionalLight
         position={[-5, 4, -4]}
         intensity={0.45}
@@ -1129,6 +1246,9 @@ export function VoxelTree() {
 
       <MouseTracker mouseRef={mouseRef} />
       <TreeGroup mouseRef={mouseRef} />
+
+      {/* スクロールで舞い始める落ち葉 */}
+      <FallingLeaves progressRef={progressRef} />
 
       {/* 浮島風の地面（草が剥がれるインタラクション付き） */}
       <VoxelGround mouseRef={mouseRef} />

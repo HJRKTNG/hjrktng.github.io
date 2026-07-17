@@ -1,8 +1,10 @@
-import { meta } from '../../data/portfolio'
+import { meta, ui } from '../../data/portfolio'
 import { SectionHeading } from '../ui/SectionHeading'
 import { useScrollReveal } from '../../hooks/useScrollReveal'
+import { useLang } from '../../i18n'
 
 export function Contact() {
+  const { t } = useLang()
   const { ref, visible } = useScrollReveal()
 
   return (
@@ -14,18 +16,16 @@ export function Contact() {
       />
 
       <div className="max-w-6xl mx-auto px-8">
-        <SectionHeading sub="お問い合わせ" num="05">Contact</SectionHeading>
+        <SectionHeading sub={t(ui.sections.contactSub)} num="06">Contact</SectionHeading>
 
         <div className="grid md:grid-cols-2 gap-16 items-center">
           {/* Left: text */}
           <div>
-            <p className="font-display text-3xl md:text-4xl font-light text-ink-100 leading-snug mb-6 tracking-tight">
-              インターンや仕事の
-              <br />
-              ご相談、お気軽にどうぞ。
+            <p className="font-display text-3xl md:text-4xl font-light text-ink-100 leading-snug mb-6 tracking-tight whitespace-pre-line">
+              {t(ui.contact.lead)}
             </p>
             <p className="text-ink-300 font-light leading-relaxed">
-              AIエンジニア・PM・フルスタック領域でのご相談、または単純なご連絡も歓迎です。
+              {t(ui.contact.body)}
             </p>
           </div>
 

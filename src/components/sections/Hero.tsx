@@ -1,17 +1,15 @@
 import { useTypewriter } from '../../hooks/useTypewriter'
-import { meta } from '../../data/portfolio'
+import { meta, heroTyped } from '../../data/portfolio'
 import { VoxelTree } from '../3d/VoxelTree'
+import { useLang } from '../../i18n'
 
 function scrollTo(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
 }
 
 export function Hero() {
-  const typed = useTypewriter(
-    ['AIとWebで、使えるものを作る。', '自走しながら、形にする。', 'AIエンジニア志望、九大4年。'],
-    80,
-    2200
-  )
+  const { lang, t } = useLang()
+  const typed = useTypewriter(heroTyped[lang], 80, 2200)
 
   return (
     <section id="hero" className="min-h-screen relative overflow-hidden flex flex-col">
@@ -37,10 +35,7 @@ export function Hero() {
         }}
       />
 
-      {/* Horizontal midline decoration */}
-      <div className="absolute top-1/2 left-0 right-0 h-px bg-ink-500/8 pointer-events-none" />
-
-      {/* ── 3D Voxel Tree — Full screen background ── */}
+      {/* ── 3D Voxel World — full-screen background ── */}
       <div className="absolute inset-0 opacity-70 md:opacity-100 pointer-events-none">
         <VoxelTree />
       </div>
@@ -55,7 +50,6 @@ export function Hero() {
 
       {/* ── Main content ── */}
       <div className="relative z-10 flex-1 flex flex-col justify-center max-w-7xl mx-auto px-8 w-full py-32 pt-40">
-
         <div className="max-w-2xl">
           {/* Status badge */}
           <div
@@ -65,7 +59,7 @@ export function Hero() {
             <div className="flex items-center gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse-slow" />
               <span className="font-mono text-xs text-ink-400 tracking-[0.3em] uppercase">
-                Available for Internship · 2026
+                {t(meta.badge)}
               </span>
             </div>
           </div>
@@ -85,11 +79,21 @@ export function Hero() {
 
           {/* English name + divider */}
           <div
-            className="animate-fade-up opacity-0 flex flex-wrap items-center gap-4 mb-8"
+            className="animate-fade-up opacity-0 flex flex-wrap items-center gap-4 mb-4"
             style={{ animationDelay: '0.48s', animationFillMode: 'forwards' }}
           >
             <span className="font-mono text-sm text-accent tracking-[0.35em]">HIJIRI KUTSUNUGI</span>
             <div className="h-px w-20 bg-gradient-to-r from-accent/50 to-transparent hidden sm:block" />
+          </div>
+
+          {/* Affiliation line */}
+          <div
+            className="animate-fade-up opacity-0 mb-8"
+            style={{ animationDelay: '0.56s', animationFillMode: 'forwards' }}
+          >
+            <p className="font-mono text-[11px] text-ink-400 tracking-wider leading-relaxed">
+              {t(meta.affiliation)}
+            </p>
           </div>
 
           {/* Typewriter tagline */}
@@ -110,11 +114,11 @@ export function Hero() {
           >
             {meta.targetRoles.map((role, i) => (
               <span
-                key={role}
+                key={role.en}
                 className="text-xs font-mono px-4 py-1.5 border border-ink-500/50 text-ink-300 hover:border-accent/50 hover:text-accent transition-all duration-300 cursor-default backdrop-blur-sm bg-bg-base/30"
                 style={{ transitionDelay: `${i * 50}ms` }}
               >
-                {role}
+                {t(role)}
               </span>
             ))}
           </div>
@@ -129,7 +133,7 @@ export function Hero() {
               className="group relative overflow-hidden px-8 py-3.5 text-sm font-medium text-bg-base transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
               style={{ background: 'linear-gradient(135deg, #d4a853, #b88c38)' }}
             >
-              <span className="relative z-10">プロジェクトを見る</span>
+              <span className="relative z-10">{t(meta.ctaProjects)}</span>
               <div
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 style={{ background: 'linear-gradient(135deg, #e8c07a, #d4a853)' }}

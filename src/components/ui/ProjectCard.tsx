@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Project } from '../../types'
 import { Tag } from './Tag'
+import { useLang } from '../../i18n'
 
 const statusConfig = {
   live: { label: 'Live', className: 'text-emerald-400 border-emerald-500/30', dot: 'bg-emerald-400' },
@@ -17,6 +18,7 @@ interface ProjectCardProps {
 export function ProjectCard({ project, index = 0, visible = true }: ProjectCardProps) {
   const status = statusConfig[project.status]
   const [hovered, setHovered] = useState(false)
+  const { lang, t } = useLang()
 
   return (
     <div
@@ -53,7 +55,10 @@ export function ProjectCard({ project, index = 0, visible = true }: ProjectCardP
           }`}>
             {project.title}
           </h3>
-          <p className="text-xs text-ink-400 mt-0.5 font-light">{project.titleJa}</p>
+          <p className="text-xs text-ink-400 mt-0.5 font-light">{t(project.subtitle)}</p>
+          {project.period && (
+            <p className="font-mono text-[10px] text-ink-500 mt-1 tracking-wider">{project.period}</p>
+          )}
         </div>
         <span className={`flex items-center gap-1.5 text-[10px] font-mono px-2 py-1 border shrink-0 ${status.className}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${status.dot} animate-pulse-slow`} />
@@ -63,16 +68,32 @@ export function ProjectCard({ project, index = 0, visible = true }: ProjectCardP
 
       {/* Description */}
       <p className="text-sm text-ink-200 leading-relaxed mb-4 relative z-10 pl-4 font-light">
-        {project.description}
+        {t(project.description)}
       </p>
 
       {/* Problem */}
-      <div className={`mb-4 p-3 transition-colors duration-300 relative z-10 ml-4 ${
-        hovered ? 'bg-accent/5 border-l border-accent/50' : 'bg-bg-elevated border-l border-ink-500/40'
-      }`}>
-        <p className="text-[10px] text-ink-400 mb-1 font-mono tracking-wider uppercase">課題</p>
-        <p className="text-sm text-ink-200 font-light">{project.problem}</p>
-      </div>
+      {project.problem && (
+        <div className={`mb-3 p-3 transition-colors duration-300 relative z-10 ml-4 ${
+          hovered ? 'bg-accent/5 border-l border-accent/50' : 'bg-bg-elevated border-l border-ink-500/40'
+        }`}>
+          <p className="text-[10px] text-ink-400 mb-1 font-mono tracking-wider uppercase">
+            {lang === 'ja' ? '課題' : 'Problem'}
+          </p>
+          <p className="text-sm text-ink-200 font-light">{t(project.problem)}</p>
+        </div>
+      )}
+
+      {/* Approach — 思考の跡 */}
+      {project.approach && (
+        <div className={`mb-4 p-3 transition-colors duration-300 relative z-10 ml-4 border-l ${
+          hovered ? 'bg-accent/8 border-accent' : 'bg-accent/4 border-accent/40'
+        }`}>
+          <p className="text-[10px] text-accent/80 mb-1 font-mono tracking-wider uppercase">
+            {lang === 'ja' ? '仮説と設計' : 'Hypothesis'}
+          </p>
+          <p className="text-sm text-ink-100 font-light leading-relaxed">{t(project.approach)}</p>
+        </div>
+      )}
 
       {/* Highlights */}
       <ul className="mb-5 space-y-1.5 relative z-10 pl-4">
@@ -81,18 +102,18 @@ export function ProjectCard({ project, index = 0, visible = true }: ProjectCardP
             <span className={`mt-1 shrink-0 text-[8px] transition-colors duration-300 ${
               hovered ? 'text-accent' : 'text-accent/50'
             }`}>◆</span>
-            <span>{h}</span>
+            <span>{t(h)}</span>
           </li>
         ))}
       </ul>
 
       {/* Tech stack */}
       <div className="flex flex-wrap gap-1.5 mb-5 relative z-10 pl-4">
-        {project.tech.map(t => <Tag key={t}>{t}</Tag>)}
+        {project.tech.map(techName => <Tag key={techName}>{techName}</Tag>)}
       </div>
 
-      {/* Links */}
-      <div className="flex gap-5 mt-auto relative z-10 pl-4">
+      {/* Links / note */}
+      <div className="flex items-center gap-5 mt-auto relative z-10 pl-4">
         {project.githubUrl && (
           <a
             href={project.githubUrl}
@@ -118,6 +139,9 @@ export function ProjectCard({ project, index = 0, visible = true }: ProjectCardP
             </svg>
             Live
           </a>
+        )}
+        {!project.githubUrl && !project.liveUrl && project.note && (
+          <span className="text-[11px] text-ink-500 font-mono">{t(project.note)}</span>
         )}
       </div>
     </div>

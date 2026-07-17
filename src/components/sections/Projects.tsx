@@ -1,14 +1,21 @@
 import { useState } from 'react'
-import { projects } from '../../data/portfolio'
+import { projects, projectCategories, ui } from '../../data/portfolio'
 import { SectionHeading } from '../ui/SectionHeading'
 import { ProjectCard } from '../ui/ProjectCard'
+import { LoadBalancerDemo } from '../demo/LoadBalancerDemo'
 import { useScrollReveal } from '../../hooks/useScrollReveal'
+import { useLang } from '../../i18n'
 
 export function Projects() {
-  const [showAll, setShowAll] = useState(false)
+  const { t } = useLang()
+  const [filter, setFilter] = useState<'all' | 'web' | 'ai' | 'game'>('all')
   const featured = projects.filter(p => p.featured)
-  const others   = projects.filter(p => !p.featured)
+  const others = projects.filter(p => !p.featured)
+  const filtered = filter === 'all' ? others : others.filter(p => p.category === filter)
+
   const { ref, visible } = useScrollReveal({ threshold: 0.05 })
+  const { ref: demoRef, visible: demoVisible } = useScrollReveal({ threshold: 0.1 })
+  const { ref: moreRef, visible: moreVisible } = useScrollReveal({ threshold: 0.05 })
 
   return (
     <section id="projects" className="py-28 bg-bg-surface relative overflow-hidden">
@@ -19,41 +26,58 @@ export function Projects() {
       />
 
       <div className="max-w-6xl mx-auto px-8">
-        <SectionHeading sub="作ったもの" num="03">Projects</SectionHeading>
+        <SectionHeading sub={t(ui.sections.projectsSub)} num="02">Projects</SectionHeading>
 
-        {/* Featured projects */}
-        <div ref={ref} className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
+        {/* Featured */}
+        <div className="flex items-center gap-4 mb-8">
+          <span className="font-mono text-[10px] text-accent tracking-[0.3em] uppercase">
+            {t(ui.sections.featuredLabel)}
+          </span>
+          <div className="h-px flex-1 bg-gradient-to-r from-accent/30 to-transparent" />
+        </div>
+        <div ref={ref} className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-14">
           {featured.map((p, i) => (
             <ProjectCard key={p.id} project={p} index={i} visible={visible} />
           ))}
         </div>
 
-        {/* Other projects */}
-        <div className="border-t border-ink-500/20 pt-8">
-          <button
-            onClick={() => setShowAll(prev => !prev)}
-            className="flex items-center gap-2.5 text-sm text-ink-400 hover:text-accent transition-colors font-mono mb-6 group"
-          >
-            <svg
-              className={`w-3.5 h-3.5 transition-transform duration-300 group-hover:text-accent ${showAll ? 'rotate-90' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-            {showAll
-              ? 'その他のプロジェクトを閉じる'
-              : `その他のプロジェクトを見る（${others.length}件）`}
-          </button>
+        {/* Interactive demo */}
+        <div
+          ref={demoRef}
+          className={`mb-16 transition-all duration-700 ${
+            demoVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
+        >
+          <LoadBalancerDemo />
+        </div>
 
-          <div
-            className={`grid md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-hidden transition-all duration-500 ${
-              showAll ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-            }`}
-          >
-            {others.map((p, i) => (
-              <ProjectCard key={p.id} project={p} index={i} visible={showAll} />
+        {/* More projects + filter */}
+        <div className="border-t border-ink-500/20 pt-10">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between mb-8">
+            <span className="font-mono text-[10px] text-ink-400 tracking-[0.3em] uppercase">
+              {t(ui.sections.moreLabel)}
+            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              {projectCategories.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setFilter(cat.id)}
+                  className={`text-xs font-mono px-3.5 py-1.5 border transition-all duration-300 ${
+                    filter === cat.id
+                      ? 'border-accent bg-accent/10 text-accent'
+                      : 'border-ink-500/40 text-ink-400 hover:text-ink-100 hover:border-ink-400'
+                  }`}
+                  aria-pressed={filter === cat.id}
+                >
+                  {t(cat.label)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div ref={moreRef} className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filtered.map((p, i) => (
+              <ProjectCard key={p.id} project={p} index={i} visible={moreVisible} />
             ))}
           </div>
         </div>
