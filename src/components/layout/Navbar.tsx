@@ -3,15 +3,14 @@ import { useActiveSection } from '../../hooks/useActiveSection'
 import { useLang } from '../../i18n'
 import { ui } from '../../data/portfolio'
 
-const NAV_IDS = ['about', 'projects', 'research', 'skills', 'resume', 'contact'] as const
+const NAV_IDS = ['about', 'projects', 'research', 'skills', 'contact'] as const
 
 const NAV_NUMS: Record<(typeof NAV_IDS)[number], string> = {
   about: '01',
   projects: '02',
   research: '03',
   skills: '04',
-  resume: '05',
-  contact: '06',
+  contact: '05',
 }
 
 function scrollTo(id: string) {

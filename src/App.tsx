@@ -7,7 +7,6 @@ import { About } from './components/sections/About'
 import { Projects } from './components/sections/Projects'
 import { Research } from './components/sections/Research'
 import { Skills } from './components/sections/Skills'
-import { Resume } from './components/sections/Resume'
 import { Contact } from './components/sections/Contact'
 
 function App() {
@@ -21,7 +20,6 @@ function App() {
         <Projects />
         <Research />
         <Skills />
-        <Resume />
         <Contact />
       </main>
       <Footer />

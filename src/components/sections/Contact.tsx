@@ -16,7 +16,7 @@ export function Contact() {
       />
 
       <div className="max-w-6xl mx-auto px-8">
-        <SectionHeading sub={t(ui.sections.contactSub)} num="06">Contact</SectionHeading>
+        <SectionHeading sub={t(ui.sections.contactSub)} num="05">Contact</SectionHeading>
 
         <div className="grid md:grid-cols-2 gap-16 items-center">
           {/* Left: text */}

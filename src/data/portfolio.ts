@@ -556,7 +556,6 @@ export const ui = {
     projects: { ja: 'Projects', en: 'Projects' } as L,
     research: { ja: 'Research', en: 'Research' } as L,
     skills: { ja: 'Skills', en: 'Skills' } as L,
-    resume: { ja: 'Resume', en: 'Resume' } as L,
     contact: { ja: 'Contact', en: 'Contact' } as L,
   },
   sections: {
@@ -564,7 +563,6 @@ export const ui = {
     projectsSub: { ja: '作ったもの', en: 'SELECTED WORK' } as L,
     researchSub: { ja: '研究', en: 'RESEARCH' } as L,
     skillsSub: { ja: '技術スタック', en: 'TECH STACK' } as L,
-    resumeSub: { ja: '履歴書', en: 'RESUME' } as L,
     contactSub: { ja: 'お問い合わせ', en: 'GET IN TOUCH' } as L,
     journeyTitle: { ja: '歩み', en: 'Journey' } as L,
     featuredLabel: { ja: 'FEATURED', en: 'FEATURED' } as L,
@@ -589,10 +587,6 @@ export const ui = {
   },
   research: {
     gradLabel: { ja: '大学院', en: 'GRAD SCHOOL' } as L,
-  },
-  resume: {
-    title: { ja: '履歴書 / Resume', en: 'Resume' } as L,
-    download: { ja: 'PDFをダウンロード', en: 'Download PDF' } as L,
   },
   contact: {
     lead: {

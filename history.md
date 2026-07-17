@@ -194,3 +194,9 @@
 - **3Dスクロール連動（`VoxelTree.tsx`）**: スクロールに応じてカメラが引きながら上昇、光が夕暮れ色へ、金色の落ち葉が舞い始める演出を追加（`ScrollRig`/`FallingLeaves`）
 - **その他**: ナビを6項目（About/Projects/Research/Skills/Resume/Contact）に再編、Hero に所属行（29卒・院進学決定）、Footer に「このサイトも自作」行、meta description 更新
 - 検証: `vite build` 成功。日英両方の全セクションDOM描画を確認（既存の型警告4件は VoxelGround 由来で変更なし）
+
+## 2026-07-18 — Resumeセクションの削除（本人意向）
+
+### 変更内容
+- 履歴書はサイトに掲載しない方針となったため、`Resume.tsx` と `public/resume.pdf`（個人情報を含むためURL直アクセスも遮断）を削除
+- ナビゲーションを5項目（About/Projects/Research/Skills/Contact=05）に再編、関連する i18n テキストも削除
