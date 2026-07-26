@@ -4,61 +4,53 @@ export default {
   theme: {
     extend: {
       colors: {
+        /* 計測器の筐体 — ガンメタル / アルマイト黒 */
         bg: {
-          base:     '#0e0d0b',
-          surface:  '#151410',
-          elevated: '#1c1a16',
-          card:     '#222018',
+          deep:  '#050607',
+          base:  '#08090A',
+          panel: '#0E1113',
+          rail:  '#141A1D',
         },
-        accent: {
-          DEFAULT: '#d4a853',
-          hover:   '#e8c07a',
-          dim:     'rgba(212,168,83,0.14)',
-          muted:   'rgba(212,168,83,0.55)',
+        line: {
+          DEFAULT: '#1C2427',
+          bright:  '#2C383D',
+        },
+        /* 光ファイバーのシアン */
+        sig: {
+          DEFAULT: '#4FD8E0',
+          bright:  '#9DF2F7',
+          deep:    '#1E8F96',
+        },
+        /* 基板の金メッキ */
+        gold: {
+          DEFAULT: '#C9A227',
+          dim:     '#8A6F1B',
         },
         ink: {
-          50:  '#f7f2ea',
-          100: '#ece5d6',
-          200: '#d0c8b6',
-          300: '#b0a694',
-          400: '#877d6e',
-          500: '#524a3e',
+          50:  '#F1F5F6',
+          100: '#DCE4E6',
+          200: '#B6C2C6',
+          300: '#8B999F',
+          400: '#5F6E75',
+          500: '#3B474C',
         },
       },
       fontFamily: {
-        display: ['Cormorant Garamond', 'Noto Serif JP', 'Georgia', 'serif'],
-        sans: ['Outfit', 'Noto Sans JP', 'sans-serif'],
-        mono: ['IBM Plex Mono', 'Consolas', 'monospace'],
+        display: ['"IBM Plex Sans Condensed"', '"Zen Kaku Gothic New"', 'sans-serif'],
+        sans:    ['"IBM Plex Sans"', '"Zen Kaku Gothic New"', 'sans-serif'],
+        mono:    ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+      },
+      letterSpacing: {
+        label: '0.32em',
       },
       animation: {
-        'fade-up':    'fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) forwards',
-        'fade-in':    'fadeIn 1s ease-out forwards',
-        'blink':      'blink 1.2s step-end infinite',
-        'float':      'float 7s ease-in-out infinite',
         'pulse-slow': 'pulse 4s cubic-bezier(0.4,0,0.6,1) infinite',
-        'spin-slow':  'spin 30s linear infinite',
-        'shimmer':    'shimmer 2.5s linear infinite',
+        'scan':       'scan 3.2s ease-in-out infinite',
       },
       keyframes: {
-        fadeUp: {
-          from: { opacity: '0', transform: 'translateY(24px)' },
-          to:   { opacity: '1', transform: 'translateY(0)' },
-        },
-        fadeIn: {
-          from: { opacity: '0' },
-          to:   { opacity: '1' },
-        },
-        blink: {
-          '0%, 100%': { opacity: '1' },
-          '50%':      { opacity: '0' },
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%':      { transform: 'translateY(-14px)' },
-        },
-        shimmer: {
-          '0%':   { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
+        scan: {
+          '0%, 100%': { transform: 'translateY(0)',      opacity: '0.15' },
+          '50%':      { transform: 'translateY(100%)',   opacity: '0.5'  },
         },
       },
     },

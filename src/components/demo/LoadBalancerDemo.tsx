@@ -19,20 +19,20 @@ const TICK_MS = 100
 const QUEUE_LIMIT = 14       // これを超えた到着はタイムアウト
 
 const C = {
-  bg: '#131210',
-  grid: 'rgba(212,168,83,0.05)',
-  user: '#524a3e',
-  userFlash: '#e8c07a',
-  userDone: '#5eb85e',
-  userDrop: '#e05252',
-  particle: '#d4a853',
-  particleTrail: 'rgba(212,168,83,0.35)',
-  server: '#3a3226',
-  serverEdge: '#6b5b3e',
-  queue: '#d4a853',
-  ok: '#5eb85e',
-  bad: '#e05252',
-  text: '#b0a694',
+  bg: '#080A0B',
+  grid: 'rgba(79,216,224,0.05)',
+  user: '#2A3438',
+  userFlash: '#9DF2F7',
+  userDone: '#4FD8E0',
+  userDrop: '#E0574F',
+  particle: '#4FD8E0',
+  particleTrail: 'rgba(79,216,224,0.30)',
+  server: '#1A2226',
+  serverEdge: '#39474D',
+  queue: '#C9A227',
+  ok: '#4FD8E0',
+  bad: '#E0574F',
+  text: '#8B999F',
 }
 
 interface Particle {
@@ -343,11 +343,11 @@ export function LoadBalancerDemo() {
     : null
 
   return (
-    <div className="border border-ink-500/25 bg-bg-card overflow-hidden">
+    <div className="border border-line bg-bg-panel overflow-hidden">
       {/* header */}
-      <div className="p-5 md:p-6 border-b border-ink-500/20 flex flex-col md:flex-row md:items-center gap-4 justify-between">
+      <div className="p-5 md:p-6 border-b border-line flex flex-col md:flex-row md:items-center gap-4 justify-between">
         <div>
-          <p className="font-mono text-[10px] text-accent tracking-[0.3em] uppercase mb-2">
+          <p className="font-mono text-[10px] text-sig tracking-label uppercase mb-2">
             Interactive Demo
           </p>
           <h3 className="text-ink-100 font-medium mb-1">{t(ui.demo.heading)}</h3>
@@ -356,7 +356,7 @@ export function LoadBalancerDemo() {
           </p>
         </div>
         {/* toggle */}
-        <div className="flex items-center border border-ink-500/40 font-mono text-xs shrink-0 self-start md:self-center">
+        <div className="flex items-center border border-line-bright font-mono text-xs shrink-0 self-start md:self-center">
           {(['off', 'on'] as const).map(m => (
             <button
               key={m}
@@ -364,8 +364,8 @@ export function LoadBalancerDemo() {
               className={`px-4 py-2 tracking-wider transition-colors duration-300 ${
                 mode === m
                   ? m === 'on'
-                    ? 'bg-emerald-500/90 text-bg-base'
-                    : 'bg-red-400/90 text-bg-base'
+                    ? 'bg-sig text-bg-deep'
+                    : 'bg-[#E0574F] text-bg-deep'
                   : 'text-ink-400 hover:text-ink-100'
               }`}
               aria-pressed={mode === m}
@@ -382,25 +382,25 @@ export function LoadBalancerDemo() {
       </div>
 
       {/* stats + sync note */}
-      <div className="px-5 md:px-6 py-4 border-t border-ink-500/20 flex flex-wrap items-center gap-x-8 gap-y-2">
+      <div className="px-5 md:px-6 py-4 border-t border-line flex flex-wrap items-center gap-x-8 gap-y-2">
         <div className="flex items-center gap-2 font-mono text-xs">
-          <span className="w-2 h-2 bg-emerald-400 inline-block" />
+          <span className="w-2 h-2 bg-sig inline-block" />
           <span className="text-ink-400">{t(ui.demo.processed)}:</span>
           <span className="text-ink-100 tabular-nums">{stats.processed}</span>
         </div>
         <div className="flex items-center gap-2 font-mono text-xs">
-          <span className="w-2 h-2 bg-red-400 inline-block" />
+          <span className="w-2 h-2 bg-[#E0574F] inline-block" />
           <span className="text-ink-400">{t(ui.demo.dropped)}:</span>
-          <span className={`tabular-nums ${stats.dropped > 0 ? 'text-red-400' : 'text-ink-100'}`}>
+          <span className={`tabular-nums ${stats.dropped > 0 ? 'text-[#E0574F]' : 'text-ink-100'}`}>
             {stats.dropped}
           </span>
         </div>
         <div className="flex items-center gap-2 font-mono text-xs">
-          <span className="w-2 h-2 bg-accent inline-block" />
+          <span className="w-2 h-2 bg-gold inline-block" />
           <span className="text-ink-400">{t(ui.demo.peak)}:</span>
           <span className="text-ink-100 tabular-nums">{stats.peak}</span>
           {okRate !== null && (
-            <span className={`ml-2 ${okRate === 100 ? 'text-emerald-400' : 'text-ink-400'}`}>
+            <span className={`ml-2 ${okRate === 100 ? 'text-sig' : 'text-ink-400'}`}>
               ({okRate}% OK)
             </span>
           )}

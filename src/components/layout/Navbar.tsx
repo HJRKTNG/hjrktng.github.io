@@ -1,38 +1,35 @@
 import { useState, useEffect } from 'react'
 import { useActiveSection } from '../../hooks/useActiveSection'
 import { useLang } from '../../i18n'
-import { ui } from '../../data/portfolio'
 
-const NAV_IDS = ['about', 'projects', 'research', 'skills', 'contact'] as const
+/* 計器の目盛りのようなナビゲーション */
 
-const NAV_NUMS: Record<(typeof NAV_IDS)[number], string> = {
-  about: '01',
-  projects: '02',
-  research: '03',
-  skills: '04',
-  contact: '05',
-}
+const NAV = [
+  { id: 'gate-array',  num: '01', ja: 'GATE ARRAY', en: 'GATE ARRAY' },
+  { id: 'conduit',     num: '02', ja: 'CONDUIT',    en: 'CONDUIT' },
+  { id: 'escapement',  num: '03', ja: 'ESCAPEMENT', en: 'ESCAPEMENT' },
+  { id: 'splitter',    num: '04', ja: 'SPLITTER',   en: 'SPLITTER' },
+  { id: 'origin',      num: '05', ja: 'ORIGIN',     en: 'ORIGIN' },
+  { id: 'spec',        num: '06', ja: 'SPEC',       en: 'SPEC' },
+  { id: 'contact',     num: '07', ja: 'CONTACT',    en: 'CONTACT' },
+]
 
 function scrollTo(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+  const el = document.getElementById(id)
+  if (!el) return
+  window.scrollTo({ top: el.offsetTop + 8, behavior: 'smooth' })
 }
 
-function LangToggle({ compact = false }: { compact?: boolean }) {
+function LangToggle() {
   const { lang, setLang } = useLang()
   return (
-    <div
-      className={`flex items-center border border-ink-500/40 font-mono text-[11px] ${compact ? '' : 'ml-2'}`}
-      role="group"
-      aria-label="Language"
-    >
+    <div className="flex items-center font-mono text-[10px] border border-line" role="group" aria-label="Language">
       {(['ja', 'en'] as const).map(l => (
         <button
           key={l}
           onClick={() => setLang(l)}
-          className={`px-2.5 py-1 tracking-widest uppercase transition-colors duration-300 ${
-            lang === l
-              ? 'bg-accent text-bg-base'
-              : 'text-ink-400 hover:text-accent'
+          className={`px-2 py-1 tracking-widest uppercase transition-colors duration-300 ${
+            lang === l ? 'bg-sig text-bg-deep' : 'text-ink-400 hover:text-sig'
           }`}
           aria-pressed={lang === l}
         >
@@ -44,93 +41,100 @@ function LangToggle({ compact = false }: { compact?: boolean }) {
 }
 
 export function Navbar() {
-  const active = useActiveSection(['hero', ...NAV_IDS])
-  const [menuOpen, setMenuOpen] = useState(false)
+  const active = useActiveSection(['hero', ...NAV.map(n => n.id)])
   const [scrolled, setScrolled] = useState(false)
-  const { t } = useLang()
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40)
+    const onScroll = () => setScrolled(window.scrollY > 60)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? 'bg-bg-base/90 backdrop-blur-md border-b border-ink-500/20'
-          : 'bg-transparent'
-      }`}
-    >
-      <nav className="max-w-7xl mx-auto px-6 md:px-8 h-16 flex items-center justify-between gap-4">
-        <button
-          onClick={() => scrollTo('hero')}
-          className="font-display text-lg font-light text-ink-100 hover:text-accent transition-colors duration-300 tracking-wide shrink-0"
-        >
-          <span className="italic">Hijiri</span> <span>Kutsunugi</span>
-        </button>
-
-        <div className="hidden md:flex items-center gap-7">
-          <ul className="flex items-center gap-7">
-            {NAV_IDS.map(id => (
-              <li key={id}>
-                <button
-                  onClick={() => scrollTo(id)}
-                  className={`group flex items-center gap-1.5 text-sm transition-colors duration-300 font-sans tracking-wide ${
-                    active === id ? 'text-accent' : 'text-ink-300 hover:text-ink-100'
-                  }`}
-                >
-                  <span className="font-mono text-[10px] text-ink-500 group-hover:text-accent/50 transition-colors duration-300">
-                    {NAV_NUMS[id]}
-                  </span>
-                  {t(ui.nav[id])}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <LangToggle />
-        </div>
-
-        <div className="md:hidden flex items-center gap-3">
-          <LangToggle compact />
+    <>
+      {/* 上部バー */}
+      <header
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
+          scrolled ? 'bg-bg-deep/85 backdrop-blur-md border-b border-line' : 'bg-transparent'
+        }`}
+      >
+        <nav className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20 h-14 flex items-center justify-between gap-6">
           <button
-            className="p-1 text-ink-300 hover:text-ink-100 transition-colors"
-            onClick={() => setMenuOpen(prev => !prev)}
-            aria-label="Menu"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="font-mono text-[11px] text-ink-200 hover:text-sig transition-colors tracking-[0.28em] uppercase"
           >
-            {menuOpen ? (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            )}
+            H. Kutsunugi
           </button>
-        </div>
-      </nav>
 
-      {menuOpen && (
-        <div className="md:hidden bg-bg-surface/95 backdrop-blur-md border-b border-ink-500/20 px-8 pb-6">
-          <ul className="flex flex-col gap-4 pt-5">
-            {NAV_IDS.map(id => (
-              <li key={id}>
+          <div className="flex items-center gap-4">
+            <span className="hidden sm:block font-mono text-[10px] text-ink-500 tabular-nums tracking-wider">
+              {active === 'hero' || !active
+                ? '— — —'
+                : `UNIT ${NAV.find(n => n.id === active)?.num ?? '--'}`}
+            </span>
+            <LangToggle />
+            <button
+              onClick={() => setOpen(o => !o)}
+              className="lg:hidden p-1 text-ink-300 hover:text-sig transition-colors"
+              aria-label="Menu"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeWidth={1.5} d={open ? 'M6 18L18 6M6 6l12 12' : 'M4 7h16M4 12h16M4 17h16'} />
+              </svg>
+            </button>
+          </div>
+        </nav>
+      </header>
+
+      {/* 右端の目盛りナビ（デスクトップ） */}
+      <div className="hidden lg:flex fixed right-6 xl:right-9 top-1/2 -translate-y-1/2 z-40 flex-col gap-3.5">
+        {NAV.map(item => {
+          const on = active === item.id
+          return (
+            <button
+              key={item.id}
+              onClick={() => scrollTo(item.id)}
+              className="group flex items-center justify-end gap-3"
+              aria-label={item.en}
+            >
+              <span
+                className={`font-mono text-[9px] tracking-widest uppercase transition-all duration-300 ${
+                  on ? 'text-sig opacity-100' : 'text-ink-500 opacity-0 group-hover:opacity-100'
+                }`}
+              >
+                {item.en}
+              </span>
+              <span
+                className={`block h-px transition-all duration-500 ${
+                  on ? 'w-8 bg-sig' : 'w-4 bg-line-bright group-hover:w-6 group-hover:bg-ink-400'
+                }`}
+              />
+            </button>
+          )
+        })}
+      </div>
+
+      {/* モバイルメニュー */}
+      {open && (
+        <div className="lg:hidden fixed inset-x-0 top-14 z-50 bg-bg-deep/95 backdrop-blur-md border-b border-line px-6 py-5">
+          <ul className="grid grid-cols-2 gap-x-6 gap-y-3">
+            {NAV.map(item => (
+              <li key={item.id}>
                 <button
-                  onClick={() => { scrollTo(id); setMenuOpen(false) }}
-                  className={`flex items-center gap-2.5 text-sm transition-colors duration-300 ${
-                    active === id ? 'text-accent' : 'text-ink-300 hover:text-ink-100'
+                  onClick={() => { scrollTo(item.id); setOpen(false) }}
+                  className={`flex items-center gap-2 font-mono text-[11px] tracking-wider ${
+                    active === item.id ? 'text-sig' : 'text-ink-300'
                   }`}
                 >
-                  <span className="font-mono text-[10px] text-ink-500">{NAV_NUMS[id]}</span>
-                  {t(ui.nav[id])}
+                  <span className="text-ink-500">{item.num}</span>
+                  {item.en}
                 </button>
               </li>
             ))}
           </ul>
         </div>
       )}
-    </header>
+    </>
   )
 }

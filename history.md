@@ -200,3 +200,34 @@
 ### 変更内容
 - 履歴書はサイトに掲載しない方針となったため、`Resume.tsx` と `public/resume.pdf`（個人情報を含むためURL直アクセスも遮断）を削除
 - ナビゲーションを5項目（About/Projects/Research/Skills/Contact=05）に再編、関連する i18n テキストも削除
+
+## 2026-07-18 — デザイン全面再設計「機構（The Machine）」
+
+「AIが作った」と見切られないデザインへ全面刷新。ボクセル3Dを廃し、サイト全体を1台の精密機械として辿るスクロール体験に再構築した。
+
+### コンセプト
+- **機構（The Machine）**: 作ってきたもの全部を1台の精密機械として描く。各プロジェクトが機構の1ユニットとして現れ、スクロールがそのままマクロレンズのカメラワークになる
+- **素材言語**: 現代の精密機器（ガンメタル / アルマイト黒 / 光ファイバーのシアン #4FD8E0 / 基板の金メッキ #C9A227）。硬質なスポットと冷いリムライト
+- 比喩は本人の物語（高校物理部の回路 → ソフトウェアのシステム設計）にしか成立しないものを選び、テンプレへの平均化を避けた
+
+### 画像
+- Codex CLI（gpt-5.6-sol）でフォトリアル画像6枚を生成（hero / gates / conduit / escapement / optics / origin）
+- 生成スクリプトは `scratchpad/gen_images.sh`。共通スタイル指定で世界観を統一
+- PNG 12MB → sips で JPEG(1920px, q78) 2.5MB に最適化。さらに近接時のみ読み込む遅延ロードを実装
+
+### スクロール駆動アニメーション（新規 `hooks/useStageProgress.ts`）
+- 単一 rAF ループで各ステージの進行度を算出し、lerp 補間して滑らかなカメラワークに変換
+- React の再レンダリングを起こさず DOM へ直接書き込み、60fps を維持
+- 入場（奥からボケて寄る）→ 滞留（テキストが順に立ち上がる）→ 退場（奥へ引いてボケる）の3段構成
+- 非表示タブ復帰時・rAF 停止中のスクロールに追従する同期フォールバックを実装
+
+### 構成の再編
+- HERO（カメラ後退で機構が現れる）→ UNIT 01 GATE ARRAY（GOUN FES）→ TEST BENCH（負荷分散デモを実際に動かせる区画）→ UNIT 02 CONDUIT（ミニリンク）→ UNIT 03 ESCAPEMENT（HakoGame）→ UNIT 04 OPTICAL SPLITTER（RAG研究）→ UNIT 05 ORIGIN（高校物理部）→ SPEC（自己紹介・改訂履歴・技術スタック・その他ユニット）→ CONTACT（銘板）
+- 各ユニットに「課題 / 仮説 / 設計 / 結果」の思考の跡と Specification パネルを配置
+- 新規 `LightField`（Canvas 2D）で機構を流れる光の筋を重ね、進行度に応じて流量が変化
+
+### タイポグラフィ・その他
+- Cormorant Garamond / Outfit を廃し、IBM Plex Sans Condensed + IBM Plex Sans + IBM Plex Mono + Zen Kaku Gothic New へ変更（計器・技術文書の語彙に統一）
+- 右端に目盛り式ナビ、左レールに進行ゲージ、コーナーのトンボ、罫線の目盛りなど計器パネルの意匠を追加
+- 旧構成のコンポーネント（About/Numbers/Projects/Research/Skills/Contact/ProjectCard/SectionHeading/Tag/VoxelTree/useTypewriter）と three.js 依存を削除
+- バンドル: 1,159KB → 262KB（gzip 322KB → 87KB）
