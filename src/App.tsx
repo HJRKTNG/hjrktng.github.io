@@ -5,6 +5,8 @@ import { MachineColumn } from './components/machine/MachineColumn'
 import { HeroSection } from './components/machine/HeroSection'
 import { UnitSection } from './components/machine/UnitSection'
 import { TestBench } from './components/machine/TestBench'
+import { DepthGauge } from './components/machine/DepthGauge'
+import { FilmGrain } from './components/machine/FilmGrain'
 import { SpecSheet } from './components/sections/SpecSheet'
 import { ContactPlate } from './components/sections/ContactPlate'
 import { stages } from './data/machine'
@@ -19,6 +21,7 @@ function App() {
         {/* ── 機構区間: 1本のカラムを降りていく ── */}
         <div id="machine-region" className="relative">
           <MachineColumn regionId="machine-region" />
+          <DepthGauge regionId="machine-region" />
 
           <div className="relative z-10">
             <HeroSection />
@@ -38,6 +41,7 @@ function App() {
         </div>
       </main>
       <Footer />
+      <FilmGrain />
     </LanguageProvider>
   )
 }

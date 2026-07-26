@@ -35,10 +35,15 @@ export function MachineColumn({ regionId }: { regionId: string }) {
   useEffect(() => {
     const measure = () => {
       const vh = window.innerHeight || 1
-      const segH = vh * SEG_VH
+      const vw = window.innerWidth || 1
+      // 画面が狭いときはカラムが幅を占有しすぎないよう上限をかける
+      // （比率を保つため、幅の上限から高さを逆算する）
+      const maxW = vw < 768 ? vw * 0.62 : vw * 0.42
+      const colW = Math.min(vh * SEG_VH * ASPECT, maxW)
+      const segH = colW / ASPECT
       const overlapPx = segH * OVERLAP
       const stripH = SEGMENTS.length * segH - (SEGMENTS.length - 1) * overlapPx
-      setDims({ segH, colW: segH * ASPECT, stripH, overlapPx })
+      setDims({ segH, colW, stripH, overlapPx })
     }
     measure()
     window.addEventListener('resize', measure)

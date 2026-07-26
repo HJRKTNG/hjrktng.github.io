@@ -23,6 +23,8 @@ export interface Stage {
   body: StageBody[]
   specs: { label: string; value: L }[]
   links?: { label: string; url: string }[]
+  /** そのユニットを一言で表す数値（大きく掲出する） */
+  metric?: { value: string; unit?: string; caption: L }
   /** 光の筋の本数 */
   density?: number
   /** 内容が多いユニットはスクロール尺を伸ばす */
@@ -82,6 +84,11 @@ export const stages: Stage[] = [
       { label: 'Stack', value: { ja: 'React · Express · PostgreSQL', en: 'React · Express · PostgreSQL' } },
       { label: 'Period', value: { ja: '2025.11 – 2026.01', en: '2025.11 – 2026.01' } },
     ],
+    metric: {
+      value: '700',
+      unit: '人',
+      caption: { ja: '当日の来場を、単独開発の1台で支えた', en: 'visitors carried by a system I built alone' },
+    },
     links: [{ label: 'GITHUB — GOUNFESGAME', url: 'https://github.com/HJRKTNG/GOUNFESGAME' }],
     density: 34,
     tall: true,
@@ -138,6 +145,11 @@ export const stages: Stage[] = [
       { label: 'Role', value: { ja: '個人開発（全工程）', en: 'Solo (end-to-end)' } },
       { label: 'Period', value: { ja: '2025.10 – 2025.12', en: '2025.10 – 2025.12' } },
     ],
+    metric: {
+      value: '6',
+      unit: '桁',
+      caption: { ja: 'ルームIDを入れるだけで繋がる', en: 'digits — that is the whole connection flow' },
+    },
     links: [
       { label: 'LIVE — minilink.jp', url: 'https://minilink.jp/' },
       { label: 'GITHUB', url: 'https://github.com/HJRKTNG/minilink' },
@@ -182,6 +194,11 @@ export const stages: Stage[] = [
         },
       },
     ],
+    metric: {
+      value: '14',
+      unit: '件',
+      caption: { ja: '不正を防ぐ規則テストをCIで自動実行', en: 'security-rule tests running in CI' },
+    },
     specs: [
       { label: 'Players', value: { ja: '最大4人 / リアルタイム', en: 'Up to 4, real-time' } },
       { label: 'Timing', value: { ja: 'サーバー基準のみ', en: 'Server-authoritative' } },
@@ -237,6 +254,11 @@ export const stages: Stage[] = [
         },
       },
     ],
+    metric: {
+      value: '0',
+      unit: 'から',
+      caption: { ja: '評価の土台を作り直した。積み上げは捨てた', en: 'rebuilt the evaluation from nothing' },
+    },
     specs: [
       { label: 'Lab', value: { ja: '小野謙二 研究室', en: 'Ono Laboratory' } },
       { label: 'Field', value: { ja: 'RAG / GraphRAG / 評価設計', en: 'RAG / GraphRAG / evaluation' } },
@@ -284,6 +306,10 @@ export const stages: Stage[] = [
         },
       },
     ],
+    metric: {
+      value: '2019',
+      caption: { ja: '知識ゼロから、回路に触れた最初の年', en: 'the year I first touched a circuit, from zero' },
+    },
     specs: [
       { label: 'Since', value: { ja: '2019 — 高校物理部', en: '2019 — physics club' } },
       { label: 'First build', value: { ja: 'アナログ入力コントローラー', en: 'A hand-made analog controller' } },
