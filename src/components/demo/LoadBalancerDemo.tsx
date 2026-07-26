@@ -343,7 +343,7 @@ export function LoadBalancerDemo() {
     : null
 
   return (
-    <div className="border border-line bg-bg-panel overflow-hidden">
+    <div className="border border-line bg-bg-panel/85 overflow-hidden">
       {/* header */}
       <div className="p-5 md:p-6 border-b border-line flex flex-col md:flex-row md:items-center gap-4 justify-between">
         <div>

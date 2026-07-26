@@ -11,7 +11,7 @@ export function TestBench() {
   const { ref, visible } = useScrollReveal({ threshold: 0.15 })
 
   return (
-    <section className="relative bg-bg-base py-24 md:py-32">
+    <section className="relative py-24 md:py-32 pointer-events-auto">
       <div ref={ref} className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20">
         <div
           className={`transition-all duration-1000 ${
@@ -31,7 +31,7 @@ export function TestBench() {
             })}
           </p>
 
-          <LoadBalancerDemo />
+          <div className="backdrop-blur-sm"><LoadBalancerDemo /></div>
         </div>
       </div>
     </section>

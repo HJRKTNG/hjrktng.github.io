@@ -1,0 +1,166 @@
+import { useEffect, useRef, useState } from 'react'
+import { LightField } from './LightField'
+
+/* ═══════════════════════════════════════════════════════════
+   機構カラム — 縦に連結した1本の機械を、スクロールで降りていく
+
+   ・各画像は中央の導管が上端／下端で必ず繋がるよう生成してある
+   ・隣り合う画像を重ね、上端をマスクでフェードさせて継ぎ目を消す
+   ・ページのスクロールに対して縦一本のストリップを動かすので、
+     セクションが切り替わっても絵は途切れず流れ続ける
+   ═══════════════════════════════════════════════════════════ */
+
+const SEGMENTS = [
+  '/images/col-0-intake.jpg',
+  '/images/col-1-gates.jpg',
+  '/images/col-2-conduit.jpg',
+  '/images/col-3-escapement.jpg',
+  '/images/col-4-optics.jpg',
+  '/images/col-5-origin.jpg',
+]
+
+/* 画像のアスペクト比（幅 / 高さ）= 1024 / 1536 */
+const ASPECT = 1024 / 1536
+/* 1セグメントの高さ（ビューポート比）と重なり量 */
+const SEG_VH = 1.06
+const OVERLAP = 0.17
+
+export function MachineColumn({ regionId }: { regionId: string }) {
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const stripRef = useRef<HTMLDivElement>(null)
+  const progressRef = useRef(0)
+  const [dims, setDims] = useState({ segH: 0, colW: 0, stripH: 0, overlapPx: 0 })
+
+  /* 寸法計算（リサイズ追従） */
+  useEffect(() => {
+    const measure = () => {
+      const vh = window.innerHeight || 1
+      const segH = vh * SEG_VH
+      const overlapPx = segH * OVERLAP
+      const stripH = SEGMENTS.length * segH - (SEGMENTS.length - 1) * overlapPx
+      setDims({ segH, colW: segH * ASPECT, stripH, overlapPx })
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [])
+
+  /* スクロール駆動 — 領域の進行度をストリップの移動量に写す */
+  useEffect(() => {
+    let raf = 0
+    let smooth = -1
+    let lastTick = 0
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    const apply = (immediate = false) => {
+      const region = document.getElementById(regionId)
+      const strip = stripRef.current
+      const wrap = wrapRef.current
+      if (region && strip && wrap) {
+        const vh = window.innerHeight || 1
+        const rect = region.getBoundingClientRect()
+        const travelRegion = Math.max(1, rect.height - vh)
+        const target = Math.min(1, Math.max(0, -rect.top / travelRegion))
+
+        if (immediate || smooth < 0 || reduce) smooth = target
+        else {
+          const d = target - smooth
+          smooth = Math.abs(d) < 0.0001 ? target : smooth + d * 0.075
+        }
+        progressRef.current = smooth
+
+        const stripH = strip.offsetHeight
+        const travelStrip = Math.max(0, stripH - vh)
+        strip.style.transform = `translate3d(0, ${(-smooth * travelStrip).toFixed(2)}px, 0)`
+
+        /* 機構区間を抜けたら静かに消える */
+        const exiting = rect.bottom < vh * 1.15
+        const fade = exiting ? Math.max(0, Math.min(1, rect.bottom / (vh * 1.15))) : 1
+        wrap.style.opacity = fade.toFixed(3)
+        wrap.style.visibility = fade < 0.01 ? 'hidden' : 'visible'
+      }
+      lastTick = performance.now()
+      if (!immediate) raf = requestAnimationFrame(() => apply())
+    }
+
+    apply(true)
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') apply(true)
+    }
+    const onScroll = () => {
+      if (performance.now() - lastTick > 220) apply(true)
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    raf = requestAnimationFrame(() => apply())
+
+    return () => {
+      cancelAnimationFrame(raf)
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('scroll', onScroll)
+    }
+  }, [regionId, dims.stripH])
+
+  return (
+    <div
+      ref={wrapRef}
+      className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-bg-deep"
+      aria-hidden
+    >
+      {/* ── 連結したカラム本体 ── */}
+      <div
+        ref={stripRef}
+        className="absolute left-1/2 -translate-x-1/2 md:left-auto md:right-[6%] md:translate-x-0 stage-layer"
+        style={{ width: dims.colW, height: dims.stripH, top: 0 }}
+      >
+        {SEGMENTS.map((src, i) => (
+          <div
+            key={src}
+            className="absolute left-0 right-0"
+            style={{
+              top: i * (dims.segH - dims.overlapPx),
+              height: dims.segH,
+              zIndex: i,
+              backgroundImage: `url(${src})`,
+              backgroundSize: '100% 100%',
+              backgroundRepeat: 'no-repeat',
+              // 上端を重なり分だけフェードさせ、前のセグメントへ溶かし込む
+              maskImage:
+                i === 0
+                  ? undefined
+                  : `linear-gradient(to bottom, transparent 0px, #000 ${dims.overlapPx}px)`,
+              WebkitMaskImage:
+                i === 0
+                  ? undefined
+                  : `linear-gradient(to bottom, transparent 0px, #000 ${dims.overlapPx}px)`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* ── 機構を流れる光 ── */}
+      <LightField progressRef={progressRef} density={30} />
+
+      {/* ── 読みやすさのための暗幕（左からの帯） ── */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            'linear-gradient(100deg, rgba(5,6,7,0.97) 0%, rgba(5,6,7,0.92) 26%, rgba(5,6,7,0.45) 52%, rgba(5,6,7,0.25) 74%, rgba(5,6,7,0.6) 100%)',
+        }}
+      />
+      {/* モバイル: カラムが文字の背後に来るため追加で落とす */}
+      <div className="absolute inset-0 md:hidden" style={{ background: 'rgba(5,6,7,0.55)' }} />
+
+      {/* 上下の締め */}
+      <div
+        className="absolute inset-x-0 top-0 h-28"
+        style={{ background: 'linear-gradient(180deg, #050607 0%, transparent 100%)' }}
+      />
+      <div
+        className="absolute inset-x-0 bottom-0 h-36"
+        style={{ background: 'linear-gradient(0deg, #050607 0%, transparent 100%)' }}
+      />
+    </div>
+  )
+}
