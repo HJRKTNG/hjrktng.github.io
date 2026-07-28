@@ -30,14 +30,7 @@ export function HeroSection() {
   return (
     <section id="hero" ref={containerRef} className="relative" style={{ height: '175vh' }}>
       <div className="sticky top-0 h-screen flex flex-col justify-center">
-        <div
-          className="absolute inset-y-0 left-0 w-full md:w-[64%] pointer-events-none"
-          style={{
-            background:
-              'linear-gradient(95deg, rgba(5,6,7,0.92) 0%, rgba(5,6,7,0.82) 46%, rgba(5,6,7,0.45) 80%, transparent 100%)',
-          }}
-        />
-        <div className="relative w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20">
+        <div className="w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20">
           <div className="animate-rise" style={{ animationDelay: '0.15s' }}>
             <div ref={nameRef} className="stage-layer">
               <p className="font-mono text-[10px] md:text-[11px] text-sig tracking-label uppercase mb-6">

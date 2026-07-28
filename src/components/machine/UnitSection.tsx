@@ -66,14 +66,6 @@ export function UnitSection({ stage }: { stage: Stage }) {
       style={{ height: stage.tall ? '270vh' : '225vh' }}
     >
       <div className="sticky top-0 h-screen flex items-center">
-        {/* 文字が機構に重なっても読めるよう、左側に地を敷く */}
-        <div
-          className="absolute inset-y-0 left-0 w-full md:w-[68%] lg:w-[62%] pointer-events-none"
-          style={{
-            background:
-              'linear-gradient(95deg, rgba(5,6,7,0.94) 0%, rgba(5,6,7,0.88) 46%, rgba(5,6,7,0.55) 78%, transparent 100%)',
-          }}
-        />
         <div className="relative w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-24 xl:px-28">
           {/* ── ラベル ── */}
           <div ref={eyebrowRef} className="stage-layer mb-5 flex items-center gap-4" style={{ opacity: 0 }}>
@@ -87,7 +79,7 @@ export function UnitSection({ stage }: { stage: Stage }) {
           </div>
 
           {/* ── 見出し ── */}
-          <div ref={headRef} className="stage-layer mb-8 max-w-[min(600px,56vw)]" style={{ opacity: 0 }}>
+          <div ref={headRef} className="stage-layer mb-8 max-w-xl lg:max-w-[600px]" style={{ opacity: 0 }}>
             <h2
               className="font-display font-bold text-ink-50 leading-[1.05] tracking-tight whitespace-pre-line"
               style={{ fontSize: 'clamp(28px, 3.9vw, 58px)' }}
@@ -142,7 +134,7 @@ export function UnitSection({ stage }: { stage: Stage }) {
           )}
 
           {/* ── 本文 ── */}
-          <div ref={bodyRef} className="stage-layer space-y-3 max-w-[min(560px,52vw)]" style={{ opacity: 0 }}>
+          <div ref={bodyRef} className="stage-layer space-y-3 max-w-xl lg:max-w-[560px]" style={{ opacity: 0 }}>
             {stage.body.map((b, i) => (
               <div key={i} className="flex gap-4 border-l border-line pl-4 hover:border-sig/40 transition-colors duration-500">
                 <span className="font-mono text-[10px] text-ink-500 pt-[3px] shrink-0 w-9 tracking-wider uppercase">
@@ -177,7 +169,7 @@ export function UnitSection({ stage }: { stage: Stage }) {
           {/* ── 仕様パネル ── */}
           <div
             ref={specRef}
-            className="stage-layer relative crop-mark mt-9 p-5 max-w-[min(560px,52vw)] backdrop-blur-[2px]"
+            className="stage-layer relative crop-mark mt-9 p-5 max-w-xl lg:max-w-[560px] backdrop-blur-[2px]"
             style={{ opacity: 0, background: 'rgba(8,9,10,0.55)' }}
           >
             <div className="flex items-center gap-3 mb-4">

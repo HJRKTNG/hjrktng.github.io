@@ -1,7 +1,7 @@
 import { LanguageProvider } from './i18n'
 import { Navbar } from './components/layout/Navbar'
 import { Footer } from './components/layout/Footer'
-import { MachineScene } from './components/machine/MachineScene'
+import { MachineColumn } from './components/machine/MachineColumn'
 import { HeroSection } from './components/machine/HeroSection'
 import { UnitSection } from './components/machine/UnitSection'
 import { TestBench } from './components/machine/TestBench'
@@ -20,7 +20,7 @@ function App() {
       <main>
         {/* ── 機構区間: 1本のカラムを降りていく ── */}
         <div id="machine-region" className="relative">
-          <MachineScene regionId="machine-region" />
+          <MachineColumn regionId="machine-region" />
           <DepthGauge regionId="machine-region" />
 
           <div className="relative z-10">
