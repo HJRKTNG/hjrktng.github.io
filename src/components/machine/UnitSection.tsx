@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useStageProgress, range, easeOutCubic } from '../../hooks/useStageProgress'
 import { useLang } from '../../i18n'
 import type { Stage } from '../../data/machine'
@@ -13,7 +13,7 @@ import type { Stage } from '../../data/machine'
    ═══════════════════════════════════════════════════════════ */
 
 export function UnitSection({ stage }: { stage: Stage }) {
-  const { t } = useLang()
+  const { lang, t } = useLang()
 
   const eyebrowRef = useRef<HTMLDivElement>(null)
   const headRef = useRef<HTMLDivElement>(null)
@@ -23,6 +23,44 @@ export function UnitSection({ stage }: { stage: Stage }) {
   const bodyRef = useRef<HTMLDivElement>(null)
   const specRef = useRef<HTMLDivElement>(null)
   const barRef = useRef<HTMLDivElement>(null)
+
+  /* ── 画面高に収める自動調整 ──
+     内容が画面より高いと sticky の中で上下が見切れるため、
+     はみ出す場合だけ全体を縮めて必ず画面内に収める */
+  const fitRef = useRef<HTMLDivElement>(null)
+  const [fit, setFit] = useState(1)
+  /* stick = 画面に固定して見せる / flow = 収まらないので普通に流して読ませる */
+  const [mode, setMode] = useState<'stick' | 'flow'>('stick')
+  const modeRef = useRef<'stick' | 'flow'>('stick')
+
+  useEffect(() => {
+    const measure = () => {
+      const el = fitRef.current
+      if (!el) return
+      const prev = el.style.transform
+      el.style.transform = 'none'
+      const h = el.scrollHeight
+      el.style.transform = prev
+      const avail = (window.innerHeight || 1) * 0.86
+      if (h <= avail) {
+        setFit(1); setMode('stick'); modeRef.current = 'stick'
+      } else if (avail / h >= 0.84) {
+        // わずかに溢れる程度なら、少しだけ縮めて固定表示を保つ
+        setFit(avail / h); setMode('stick'); modeRef.current = 'stick'
+      } else {
+        // 大きく溢れる（画面が低い・モバイル）ときは固定をやめて普通に読ませる
+        setFit(1); setMode('flow'); modeRef.current = 'flow'
+      }
+    }
+    measure()
+    const t1 = setTimeout(measure, 300)
+    const t2 = setTimeout(measure, 1200)
+    window.addEventListener('resize', measure)
+    return () => {
+      clearTimeout(t1); clearTimeout(t2)
+      window.removeEventListener('resize', measure)
+    }
+  }, [lang])
 
   const containerRef = useStageProgress(p => {
     const set = (
@@ -36,6 +74,17 @@ export function UnitSection({ stage }: { stage: Stage }) {
       el.style.opacity = a.toFixed(3)
       el.style.transform =
         `translate3d(${(dx * (1 - e)).toFixed(2)}px, ${((1 - e) * dy - range(p, outA, outB) * 26).toFixed(2)}px, 0)`
+    }
+
+    if (modeRef.current === 'flow') {
+      // 流し読みモードでは出入りさせず、常に読める状態にしておく
+      for (const el of [eyebrowRef.current, headRef.current, metricRef.current, bodyRef.current, specRef.current]) {
+        if (el) { el.style.opacity = '1'; el.style.transform = 'none' }
+      }
+      if (leadLineRef.current) leadLineRef.current.style.transform = 'scaleX(1)'
+      if (nodeRef.current) { nodeRef.current.style.opacity = '1'; nodeRef.current.style.transform = 'scale(1)' }
+      if (barRef.current) barRef.current.style.transform = `scaleY(${p.toFixed(4)})`
+      return
     }
 
     set(eyebrowRef.current, 0.05, 0.16, 0.84, 0.95, 20)
@@ -63,10 +112,20 @@ export function UnitSection({ stage }: { stage: Stage }) {
       id={stage.id}
       ref={containerRef}
       className="relative"
-      style={{ height: stage.tall ? '270vh' : '225vh' }}
+      style={mode === 'stick' ? { height: stage.tall ? '270vh' : '225vh' } : undefined}
     >
-      <div className="sticky top-0 h-screen flex items-center">
+      <div
+        className={
+          mode === 'stick'
+            ? 'sticky top-0 h-screen flex items-center'
+            : 'relative flex items-center py-20 md:py-24'
+        }
+      >
         <div className="relative w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-24 xl:px-28">
+          <div
+            ref={fitRef}
+            style={{ transform: fit < 1 ? `scale(${fit.toFixed(3)})` : undefined, transformOrigin: 'left center' }}
+          >
           {/* ── ラベル ── */}
           <div ref={eyebrowRef} className="stage-layer mb-5 flex items-center gap-4" style={{ opacity: 0 }}>
             <span className="font-mono text-[11px] text-sig tracking-label uppercase">
@@ -82,7 +141,7 @@ export function UnitSection({ stage }: { stage: Stage }) {
           <div ref={headRef} className="stage-layer mb-8 max-w-xl lg:max-w-[600px]" style={{ opacity: 0 }}>
             <h2
               className="font-display font-bold text-ink-50 leading-[1.05] tracking-tight whitespace-pre-line"
-              style={{ fontSize: 'clamp(28px, 3.9vw, 58px)' }}
+              style={{ fontSize: 'clamp(26px, min(3.7vw, 5.4vh), 54px)' }}
             >
               {t(stage.title)}
             </h2>
@@ -93,12 +152,12 @@ export function UnitSection({ stage }: { stage: Stage }) {
 
           {/* ── 主要数値 + 機構への引き出し線 ── */}
           {stage.metric && (
-            <div ref={metricRef} className="stage-layer mb-9" style={{ opacity: 0 }}>
+            <div ref={metricRef} className="stage-layer mb-7" style={{ opacity: 0 }}>
               <div className="flex items-center gap-5">
                 <div className="flex items-baseline gap-2 shrink-0">
                   <span
                     className="font-display font-bold text-ink-50 leading-none tabular-nums"
-                    style={{ fontSize: 'clamp(46px, 6.4vw, 92px)' }}
+                    style={{ fontSize: 'clamp(40px, min(5.8vw, 9vh), 82px)' }}
                   >
                     {stage.metric.value}
                   </span>
@@ -169,7 +228,7 @@ export function UnitSection({ stage }: { stage: Stage }) {
           {/* ── 仕様パネル ── */}
           <div
             ref={specRef}
-            className="stage-layer relative crop-mark mt-9 p-5 max-w-xl lg:max-w-[560px] backdrop-blur-[2px]"
+            className="stage-layer relative crop-mark mt-7 p-5 max-w-xl lg:max-w-[560px] backdrop-blur-[2px]"
             style={{ opacity: 0, background: 'rgba(8,9,10,0.55)' }}
           >
             <div className="flex items-center gap-3 mb-4">
@@ -188,6 +247,8 @@ export function UnitSection({ stage }: { stage: Stage }) {
                 </div>
               ))}
             </dl>
+          </div>
+
           </div>
 
           {/* 左レールの進行ゲージ */}
