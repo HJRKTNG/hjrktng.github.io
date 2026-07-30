@@ -4,8 +4,12 @@
 
 html {
   background-color: #08090A;
-  /* スクロール駆動アニメーションを自前で補間するため smooth は使わない */
-  scroll-behavior: auto;
+  /* アンカー移動やスナップの寄りをなめらかにする。
+     セクション内のアニメーションは transform 側で補間しているため干渉しない */
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
 }
 
 body {
