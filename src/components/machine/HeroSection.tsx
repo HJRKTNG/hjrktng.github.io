@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { useStageProgress, range } from '../../hooks/useStageProgress'
 import { meta } from '../../data/portfolio'
 import { useLang } from '../../i18n'
+import { SnapPoint } from './ScrollSnap'
 
 /* 冒頭 — 流れ続けるカラムの前に名前が置かれ、静かに送り出される */
 
@@ -29,6 +30,8 @@ export function HeroSection() {
 
   return (
     <section id="hero" ref={containerRef} className="relative" style={{ height: '145vh' }}>
+      <SnapPoint at="34%" />
+
       <div className="sticky top-0 h-screen flex flex-col justify-center">
         <div className="w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20">
           <div className="animate-rise" style={{ animationDelay: '0.15s' }}>

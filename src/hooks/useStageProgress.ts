@@ -46,8 +46,9 @@ export function useStageProgress<T extends HTMLElement = HTMLDivElement>(
           smooth = target
         } else {
           const d = target - smooth
-          // 差が微小なときはスナップして無限に微動するのを防ぐ
-          smooth = Math.abs(d) < 0.0002 ? target : smooth + d * ease
+          // 大きく離れているほど強く追従させる（一気にスクロールしても置いていかれない）
+          const k = Math.min(0.42, ease + Math.abs(d) * 1.6)
+          smooth = Math.abs(d) < 0.0002 ? target : smooth + d * k
         }
         cbRef.current(smooth)
       }

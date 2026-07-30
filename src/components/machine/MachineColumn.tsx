@@ -20,6 +20,17 @@ const SEGMENTS = [
 ]
 
 /* 画像のアスペクト比（幅 / 高さ）= 1024 / 1536 */
+/* 各セクションが表示すべきセグメント位置（画像とページ内容を一致させる） */
+const SYNC: { id: string; seg: number }[] = [
+  { id: 'hero',       seg: 0 },
+  { id: 'gate-array', seg: 1 },
+  { id: 'test-bench', seg: 1.4 },
+  { id: 'conduit',    seg: 2 },
+  { id: 'escapement', seg: 3 },
+  { id: 'splitter',   seg: 4 },
+  { id: 'origin',     seg: 5 },
+]
+
 const ASPECT = 1024 / 1536
 /* 1セグメントの高さ（ビューポート比）と重なり量 */
 const SEG_VH = 1.06
@@ -30,6 +41,8 @@ export function MachineColumn({ regionId }: { regionId: string }) {
   const stripRef = useRef<HTMLDivElement>(null)
   const progressRef = useRef(0)
   const [dims, setDims] = useState({ segH: 0, colW: 0, stripH: 0, overlapPx: 0 })
+  const dimsRef = useRef({ segH: 0, colW: 0, stripH: 0, overlapPx: 0 })
+  const stripYRef = useRef(0)
 
   /* 寸法計算（リサイズ追従） */
   useEffect(() => {
@@ -43,7 +56,9 @@ export function MachineColumn({ regionId }: { regionId: string }) {
       const segH = colW / ASPECT
       const overlapPx = segH * OVERLAP
       const stripH = SEGMENTS.length * segH - (SEGMENTS.length - 1) * overlapPx
-      setDims({ segH, colW, stripH, overlapPx })
+      const next = { segH, colW, stripH, overlapPx }
+      dimsRef.current = next
+      setDims(next)
     }
     measure()
     window.addEventListener('resize', measure)
@@ -74,9 +89,46 @@ export function MachineColumn({ regionId }: { regionId: string }) {
         }
         progressRef.current = smooth
 
+        /* ── セクションと画像を同期させる ──
+           各セクションの中央に来たとき、そのセクションのセグメントが
+           画面中央に来るよう、スクロール位置からセグメント位置を逆算する */
         const stripH = strip.offsetHeight
-        const travelStrip = Math.max(0, stripH - vh)
-        strip.style.transform = `translate3d(0, ${(-smooth * travelStrip).toFixed(2)}px, 0)`
+        const segH = stripH > 0 ? (stripH + (SEGMENTS.length - 1) * dimsRef.current.overlapPx) / SEGMENTS.length : 0
+        const step = segH - dimsRef.current.overlapPx
+        const scrollY = window.scrollY || window.pageYOffset
+
+        const anchors: { y: number; seg: number }[] = []
+        for (const a of SYNC) {
+          const el = document.getElementById(a.id)
+          if (el) anchors.push({ y: el.offsetTop + el.offsetHeight / 2 - vh / 2, seg: a.seg })
+        }
+
+        let seg = 0
+        if (anchors.length > 0) {
+          if (scrollY <= anchors[0].y) seg = anchors[0].seg
+          else if (scrollY >= anchors[anchors.length - 1].y) seg = anchors[anchors.length - 1].seg
+          else {
+            for (let i = 0; i < anchors.length - 1; i++) {
+              const a = anchors[i]
+              const b = anchors[i + 1]
+              if (scrollY >= a.y && scrollY <= b.y) {
+                const r = (scrollY - a.y) / Math.max(1, b.y - a.y)
+                seg = a.seg + (b.seg - a.seg) * r
+                break
+              }
+            }
+          }
+        }
+
+        // セグメント中心を画面中央に置く
+        const rawY = seg * step + segH / 2 - vh / 2
+        const maxY = Math.max(0, stripH - vh)
+        const targetY = Math.min(maxY, Math.max(0, rawY))
+
+        // 目標位置へなめらかに寄せる
+        stripYRef.current += (targetY - stripYRef.current) * Math.min(0.4, 0.09 + Math.abs(targetY - stripYRef.current) / Math.max(1, vh) * 0.25)
+        if (immediate) stripYRef.current = targetY
+        strip.style.transform = `translate3d(0, ${(-stripYRef.current).toFixed(2)}px, 0)`
 
         /* 機構区間を抜けたら静かに消える */
         const exiting = rect.bottom < vh * 1.15

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useStageProgress, range, easeOutCubic } from '../../hooks/useStageProgress'
 import { useLang } from '../../i18n'
 import type { Stage } from '../../data/machine'
+import { SnapPoint } from './ScrollSnap'
 
 /* ═══════════════════════════════════════════════════════════
    ユニットの解説 — 背後を流れ続けるカラムの上に情報を重ねる
@@ -116,6 +117,9 @@ export function UnitSection({ stage }: { stage: Stage }) {
       className="relative"
       style={mode === 'stick' ? { height: stage.tall ? '215vh' : '185vh' } : undefined}
     >
+      {/* 読み位置（ここでスクロールが止まる） */}
+      <SnapPoint />
+
       <div
         className={
           mode === 'stick'

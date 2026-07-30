@@ -1,6 +1,7 @@
 import { LoadBalancerDemo } from '../demo/LoadBalancerDemo'
 import { useScrollReveal } from '../../hooks/useScrollReveal'
 import { useLang } from '../../i18n'
+import { SnapPoint } from './ScrollSnap'
 
 /* ═══════════════════════════════════════════════════════════
    試験台 — UNIT 01 のゲート機構を、実際に動かして確かめる区画
@@ -11,7 +12,8 @@ export function TestBench() {
   const { ref, visible } = useScrollReveal({ threshold: 0.15 })
 
   return (
-    <section className="relative py-24 md:py-32 pointer-events-auto">
+    <section id="test-bench" className="relative py-24 md:py-32 pointer-events-auto">
+      <SnapPoint />
       <div ref={ref} className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20">
         <div
           className={`transition-all duration-1000 ${

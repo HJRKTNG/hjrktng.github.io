@@ -7,6 +7,7 @@ import { UnitSection } from './components/machine/UnitSection'
 import { TestBench } from './components/machine/TestBench'
 import { DepthGauge } from './components/machine/DepthGauge'
 import { FilmGrain } from './components/machine/FilmGrain'
+import { ScrollSnap } from './components/machine/ScrollSnap'
 import { SpecSheet } from './components/sections/SpecSheet'
 import { ContactPlate } from './components/sections/ContactPlate'
 import { stages } from './data/machine'
@@ -22,6 +23,7 @@ function App() {
         <div id="machine-region" className="relative">
           <MachineColumn regionId="machine-region" />
           <DepthGauge regionId="machine-region" />
+          <ScrollSnap regionId="machine-region" />
 
           <div className="relative z-10">
             <HeroSection />
