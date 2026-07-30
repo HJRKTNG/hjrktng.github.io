@@ -87,19 +87,21 @@ export function UnitSection({ stage }: { stage: Stage }) {
       return
     }
 
-    set(eyebrowRef.current, 0.05, 0.16, 0.84, 0.95, 20)
-    set(headRef.current,    0.10, 0.24, 0.79, 0.92, 40)
-    set(metricRef.current,  0.20, 0.34, 0.75, 0.88, 28)
-    set(bodyRef.current,    0.30, 0.46, 0.70, 0.85, 30)
-    set(specRef.current,    0.40, 0.56, 0.66, 0.82, 20, 26)
+    /* 端に無表示の区間ができないよう、入りは 0 から・退きは 1 まで使い切る。
+       順番のずれ（スタッガー）は保ちつつ、中盤は全要素が出そろった状態を長く保つ */
+    set(eyebrowRef.current, 0.00, 0.07, 0.94, 1.00, 18)
+    set(headRef.current,    0.02, 0.11, 0.91, 0.99, 34)
+    set(metricRef.current,  0.06, 0.17, 0.88, 0.97, 26)
+    set(bodyRef.current,    0.10, 0.23, 0.86, 0.96, 28)
+    set(specRef.current,    0.15, 0.29, 0.84, 0.95, 18, 24)
 
     /* 引き出し線が機構へ向かって伸びる */
     if (leadLineRef.current) {
-      const grow = easeOutCubic(range(p, 0.24, 0.46)) * (1 - range(p, 0.74, 0.86))
+      const grow = easeOutCubic(range(p, 0.08, 0.30)) * (1 - range(p, 0.88, 0.97))
       leadLineRef.current.style.transform = `scaleX(${grow.toFixed(4)})`
     }
     if (nodeRef.current) {
-      const a = range(p, 0.42, 0.52) * (1 - range(p, 0.74, 0.86))
+      const a = range(p, 0.26, 0.36) * (1 - range(p, 0.88, 0.97))
       nodeRef.current.style.opacity = a.toFixed(3)
       nodeRef.current.style.transform = `scale(${(0.4 + a * 0.6).toFixed(3)})`
     }
@@ -112,7 +114,7 @@ export function UnitSection({ stage }: { stage: Stage }) {
       id={stage.id}
       ref={containerRef}
       className="relative"
-      style={mode === 'stick' ? { height: stage.tall ? '270vh' : '225vh' } : undefined}
+      style={mode === 'stick' ? { height: stage.tall ? '215vh' : '185vh' } : undefined}
     >
       <div
         className={

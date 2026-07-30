@@ -13,12 +13,12 @@ export function HeroSection() {
 
   const containerRef = useStageProgress(p => {
     if (nameRef.current) {
-      const out = range(p, 0.42, 0.78)
+      const out = range(p, 0.66, 0.98)
       nameRef.current.style.opacity = (1 - out).toFixed(3)
       nameRef.current.style.transform = `translate3d(0, ${(-out * 56).toFixed(2)}px, 0)`
     }
     if (metaRef.current) {
-      const out = range(p, 0.30, 0.62)
+      const out = range(p, 0.58, 0.92)
       metaRef.current.style.opacity = (1 - out).toFixed(3)
       metaRef.current.style.transform = `translate3d(0, ${(-out * 40).toFixed(2)}px, 0)`
     }
@@ -28,7 +28,7 @@ export function HeroSection() {
   })
 
   return (
-    <section id="hero" ref={containerRef} className="relative" style={{ height: '175vh' }}>
+    <section id="hero" ref={containerRef} className="relative" style={{ height: '145vh' }}>
       <div className="sticky top-0 h-screen flex flex-col justify-center">
         <div className="w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20">
           <div className="animate-rise" style={{ animationDelay: '0.15s' }}>
